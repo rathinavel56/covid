@@ -53,9 +53,9 @@ export class LoginComponent extends BaseComponent implements OnInit {
             isBackendFailure === 'true'
         ) {
             sessionStorage.removeItem('backend_failure');
-            this.toastService.error(
-                'We are facing a backend problem, please try again after sometimes or if the issue exist kindly contact adminstrator'
-            );
+            // this.toastService.error(
+            //     'We are facing a backend problem, please try again after sometimes or if the issue exist kindly contact adminstrator'
+            // );
         }
         this.loginForm = this.formBuilder.group({
             username: ['', [Validators.required, Validators.minLength(3)]],

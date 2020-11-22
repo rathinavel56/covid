@@ -1,18 +1,18 @@
 {
     "/api/*": {
-        "target": "https://itstheimasapp.com",
+        "target": "http://3.132.95.244",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
     },
     "/images/original/*": {
-        "target": "https://itstheimasapp.com",
+        "target": "http://3.132.95.244",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
     },
     "/images/static/*": {
-        "target": "https://itstheimasapp.com",
+        "target": "http://3.132.95.244",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true

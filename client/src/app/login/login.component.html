@@ -12,11 +12,6 @@
       padding-top: 10px;
       padding-bottom: 9px;
       font-size: 12px;
-
-      &:focus {
-        outline: none;
-        box-shadow: none;
-      }
     }
 </style>
 <!-- @format -->
@@ -25,14 +20,14 @@
         <div class="d-flex">
             <div class="login-left d-flex align-items-center">
                 <div class="logininner">
-                    <div class="text-center toplogo">
+                    <!-- <div class="text-center toplogo">
                         <a href="javascript:void(0)" [routerLink]="['/']">
                             <img
                                 src="assets/images/login-logo.png"
                                 class="img-fluid"
                             />
                         </a>
-                    </div>
+                    </div> -->
                     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                         <div class="form-content">
                             <div class="form-group">
@@ -116,14 +111,14 @@
                                 (click)="onSubmit()"
                                 >{{ 'Log in' | translate }}</a
                             >
-                            <a
+                            <!-- <a
                                 class="secondryBtn"
                                 [routerLink]="['/signup']"
                                 >{{ 'Register' | translate }}</a
-                            >
+                            > -->
                         </div>
                     </form>
-                    <div class="thirdlogin pt-3">
+                    <!-- <div class="thirdlogin pt-3">
                         <p class="thirdtext">
                             Sign in with : 
                         
@@ -141,11 +136,8 @@
                             ><i class="fa fa-google" aria-hidden="true"></i></a
                         >
                         </p>
-                    </div>
+                    </div> -->
                 </div>
-            </div>
-            <div class="limageright">
-                <img src="assets/images/login-image.jpg" class="img-fluid" />
             </div>
         </div>
     </div>
