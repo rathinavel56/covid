@@ -1,0 +1,458 @@
+<!-- Banner Start -->
+<section class="innerBanners">
+    <div class="innerBanners_overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="innerBanners_box">
+                    <h1>Best in Acting</h1>
+                    <ul>
+                        <li><a href="javascript:void(0)">HOME</a></li>
+                        <li><a href="javascript:void(0)">PROFILE</a></li>
+                        <li><p>BEST IN ACTING</p></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Banner End -->
+<div class="imacontainer" *ngIf="user">
+    <div class="container">
+        <div class="row proSec">
+            <div class="offset-md-2 col-md-8">
+                <div class="secBorder">
+                    <div class="profileheader text-center">
+                        <app-attachment
+                            [attachment]="user.attachment"
+                            [type]="original"
+                            [cssClass]="'profiletopimg'"
+                        ></app-attachment>
+                    </div>
+                    <div class="contprofileimage">
+                        <app-attachment
+                            [attachment]="user.attachment"
+                            [type]="original"
+                            [cssClass]="'profilecircleimg'"
+                        ></app-attachment>
+                    </div>
+
+                    <div class="socialSec">
+                        <h2 class="text-center">
+                            {{ user.first_name }} {{ user.last_name }}
+                        </h2>
+                        <ul
+                            class="profile-social list-inline text-center"
+                            *ngIf="user.socials.length > 0"
+                        >
+                            <li
+                                class="list-inline-item pt-3 mb-2"
+                                *ngFor="
+                                    let social of user.socials;
+                                    trackBy: trackById
+                                "
+                            >
+                                <a href="{{ social.url }}" target="_bank">
+                                    <img
+                                        src="{{ social.web_image }}"
+                                        class="img-fluid faIcon"
+                                    />
+                                    <span class="d-block faName"
+                                        >{{ social.name }}</span
+                                    >
+                                </a>
+                            </li><br>
+                            <li class="list-inline-item pt-4">
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="openFb()"
+                                    class="shareFace"
+                                    >Share
+                                    <i
+                                        class="fa fa-facebook"
+                                        aria-hidden="true"
+                                    ></i
+                                ></a>
+
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="openTwitter()"
+                                    class="shareTwit"
+                                    >Share
+                                    <i
+                                        class="fa fa-twitter"
+                                        aria-hidden="true"
+                                    ></i
+                                ></a>
+                            </li>
+                        </ul>
+                        <ul *ngIf="user.socials.length === 0" class="text-center mb-3 mt-2 ml_35">
+                            <li class="list-inline-item pt-4">
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="openFb()"
+                                    class="shareFace"
+                                    >Share
+                                    <i
+                                        class="fa fa-facebook"
+                                        aria-hidden="true"
+                                    ></i
+                                ></a>
+
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="openTwitter()"
+                                    class="shareTwit"
+                                    >Share
+                                    <i
+                                        class="fa fa-twitter"
+                                        aria-hidden="true"
+                                    ></i
+                                ></a>
+                            </li>
+                        </ul>
+                        <ul
+                            class="profile-social list-inline text-center"
+                            *ngIf="
+                                sessionService.isAuth &&
+                                sessionService.user.id === user.id
+                            "
+                        >
+                            <li class="list-inline-item px-4">
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="open(mymodal, true, 0, 0)"
+                                >
+                                    <i
+                                        _ngcontent-bye-c27=""
+                                        aria-hidden="true"
+                                        class="fa camera fa-camera fa-6"
+                                    ></i>
+                                    <span class="d-block"
+                                        ><em>Upload Image/Video</em></span
+                                    >
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="contestantprofile">
+                    <div class="container">
+                        <div class="contprofilearea">
+                            <div class="text-center">
+                                <div
+                                    class="my-5"
+                                    *ngIf="
+                                        sessionService.isAuth &&
+                                        sessionService.user.id === user.id &&
+                                        user.is_admin_approval
+                                    "
+                                >
+                                    <a
+                                        href="javascript:void(0)"
+                                        (click)="approval()"
+                                        class="btn btn-primary contestvote-btn d-flex align-items-center justify-content-center text-uppercase m-auto"
+                                    >
+                                        <i
+                                            class="fa fa-star fa-2x mr-2"
+                                            aria-hidden="true"
+                                        ></i>
+                                        Request For Admin
+                                    </a>
+                                </div>
+                                <div
+                                    class="my-5"
+                                    *ngIf="(!sessionService.isAuth || (sessionService.isAuth && sessionService.user.id !== user.id))"
+                                >
+                                    <a
+                                        href="javascript:void(0)"
+                                        (click)="redirect(user)"
+                                        class="btn contestvoteBtn d-flex align-items-center justify-content-center text-uppercase m-auto"
+                                    >
+                                        <i
+                                            class="fa fa-star fa-2x mr-2"
+                                            aria-hidden="true"
+                                        ></i>
+                                        Vote for {{ user.first_name }}
+                                        {{ user.last_name }}
+                                    </a>
+                                </div>
+                                <div class="voteandrank">
+                                    <ul
+                                        class="voterankcounts list-inline text-center"
+                                    >
+                                        <li class="list-inline-item px-4">
+                                            <img
+                                                src="assets/images/rating-icon.png"
+                                                class="img-fluid mt-2"
+                                            />
+                                            <span
+                                                class="d-block profilevcount"
+                                                *ngIf="categoryId"
+                                                >{{ user.vote_category.votes
+                                                }}<span
+                                                    class="d-block contvotestext"
+                                                    >votes</span
+                                                ></span
+                                            >
+                                            <span
+                                                class="d-block profilevcount"
+                                                *ngIf="!categoryId"
+                                                >{{ user.votes
+                                                }}<span
+                                                    class="d-block contvotestext"
+                                                    >votes</span
+                                                ></span
+                                            >
+                                        </li>
+                                    </ul>
+                                </div>
+                                <ul class="list-unstyled text-left d-flex justify-content-center contprofile-slisting flex-column mt-4">
+                                    <li class="pb-3 my-4 mx-auto" *ngIf="user.subscribed_data.length === 0">
+                                        <div class="contprofile-listing">
+                                            <a
+                                                href="javascript:void(0)"
+                                                [routerLink]="['/login']"
+                                                *ngIf="!sessionService.isAuth"
+                                            >
+                                                <img
+                                                    src="assets/images/subscribe-lock.png"
+                                                    class="img-fluid"
+                                                />
+                                            </a>
+                                            <a
+                                                href="javascript:void(0)"
+                                                [routerLink]="['/purchase']"
+                                                *ngIf="
+                                                    sessionService.isAuth &&
+                                                    !user.is_subscribed
+                                                "
+                                            >
+                                                <img
+                                                    src="assets/images/subscribe-lock.png"
+                                                    class="img-fluid"
+                                                />
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li
+                                        class="pb-3 mb-4 mx-auto"
+                                        *ngIf="user.subscribed_data.length > 0"
+                                    >
+                                        <div
+                                            class="contprofile-listing mx-auto"
+                                            *ngFor="
+                                                let subscribData of user.subscribed_data; let subscribDataIndex = index;
+                                                trackBy: trackById
+                                            "
+                                        >
+                                            <div
+                                                class="profileinitialimg mx-auto text-center"
+                                            >
+                                                <h3 class="categoryname">
+                                                    {{
+                                                        subscribData.category
+                                                            .name
+                                                    }}
+                                                </h3>
+                                                <app-attachment
+                                                    [attachment]="
+                                                        subscribData
+                                                            .attachments[0]
+                                                    "
+                                                    [type]="original"
+                                                    [cssClass]="
+                                                        'profilefirstimg'
+                                                    "
+                                                ></app-attachment>
+
+                                            </div>
+                                            <span
+                                                *ngFor="
+                                                    let attachment of subscribData.attachments
+                                                        | slice: 1;
+                                                    let i = index;
+                                                    trackBy: trackById
+                                                "
+                                            >
+                                                <span
+                                                    class="thumb-block"
+                                                    [ngClass]="{
+                                                        'block-hide':
+                                                            i > 3 &&
+                                                            !subscribData.viewmore
+                                                    }"
+                                                >
+                                                    <app-attachment
+                                                        [attachment]="
+                                                            attachment
+                                                        "
+                                                        [type]="original"
+                                                        [cssClass]="
+                                                            'profilefulllist'
+                                                        "
+                                                    ></app-attachment>
+                                                </span>
+                                            </span>
+                                            <span
+                                                class="plusmore thumb-block"
+                                                *ngIf="
+                                                    !subscribData.viewmore &&
+                                                    subscribData.attachments
+                                                        .length > 3
+                                                "
+                                                (click)="open(mymodal, false, subscribDataIndex, subscribData.attachments.length)"
+                                                >+View More</span
+                                            >
+                                            <a
+                                                href="javascript:void(0)"
+                                                [routerLink]="['/login']"
+                                                *ngIf="!sessionService.isAuth && !user.is_subscribed"
+                                            >
+                                                <img
+                                                    src="assets/images/subscribe-lock.png"
+                                                    class="img-fluid"
+                                                />
+                                            </a>
+                                            <a
+                                                href="javascript:void(0)"
+                                                [routerLink]="['/purchase']"
+                                                *ngIf="sessionService.isAuth && !user.is_subscribed">
+                                                <img
+                                                    src="assets/images/subscribe-lock.png"
+                                                    class="img-fluid"
+                                                />
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li
+                                        class="pb-3 my-4 mx-auto"
+                                        *ngIf="
+                                            sessionService.isAuth &&
+                                            user.is_subscribed &&
+                                            user.subscribed_data.length === 0
+                                        "
+                                    >
+                                        No Records
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<ng-template #mymodal let-modal>
+    <div class="profileModal">
+        <div class="modal-header">
+            <h4 *ngIf="isUploadAttachment" class="modal-title pb-3" id="modal-basic-title">Upload Image/Video</h4>
+            <button
+                type="button"
+                class="close"
+                aria-label="Close"
+                (click)="modal.dismiss('Cross click')"
+            >
+                <span aria-hidden="true">×</span>
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="isUploadAttachment">
+            <div class="form-group">
+                <label for="category">Category <span>*</span></label>
+                <select
+                    class="form-control"
+                    [(ngModel)]="catId"
+                    [ngModelOptions]="{ standalone: true }"
+                    id="category"
+                    (change)="changeSelect($event.target.value)"
+                >
+                    <option
+                        *ngFor="let userCategory of userCategories"
+                        [value]="userCategory.category_id"
+                        >{{ userCategory.category.name }}</option
+                    >
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="location">Location <span>*</span></label>
+                <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="location"
+                    [ngModelOptions]="{ standalone: true }"
+                    id="location"
+                />
+            </div>
+            <div class="form-group">
+                <label for="caption">Caption<span>*</span></label>
+                <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="caption"
+                    [ngModelOptions]="{ standalone: true }"
+                    id="caption"
+                />
+            </div>
+            <div class="form-group" *ngIf="!isvideo">
+                <label for="Image">Image<span>*</span></label>
+                <input
+                    [(ngModel)]="image"
+                    (change)="uploadImage($event)"
+                    accept="image/x-png,image/jpeg"
+                    [ngModelOptions]="{ standalone: true }"
+                    type="file"
+                    multiple
+                    class="form-control"
+                    id="Image"
+                />
+            </div>
+            <div class="form-group" *ngIf="isvideo">
+                <label for="Video">Video<span>*</span></label>
+                <input
+                    type="file"
+                    id="video-upload"
+                    class="form-control"
+                    (change)="uploadVideo($event)"
+                    [(ngModel)]="video"
+                    accept="video/*"
+                    [ngModelOptions]="{ standalone: true }"
+                />
+            </div>
+            <div class="form-check">
+                <input
+                    type="checkbox"
+                    [(ngModel)]="isvideo"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="form-check-input"
+                    id="isvideo"
+                />
+                <label class="form-check-label" for="isvideo">Video</label>
+            </div>
+            <div class="form-check">
+                <input
+                    type="checkbox"
+                    [(ngModel)]="ispaid"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="form-check-input"
+                    id="ispaid"
+                />
+                <label class="form-check-label" for="ispaid">Paid</label>
+            </div>
+        </div>
+        <div class="modal-footer" *ngIf="isUploadAttachment">
+            <button type="button" (click)="profileUpload()" class="btn btnPrimary">
+                Submit
+            </button>
+        </div>
+        <div class="modal-body" *ngIf="!isUploadAttachment">
+            <h4 class="text-center py-2">Location : {{user.subscribed_data[subscribeIndex].attachments[attachmentIndex].location}}
+            Caption: {{user.subscribed_data[subscribeIndex].attachments[attachmentIndex].caption}}</h4>
+            <app-attachment [attachment]="user.subscribed_data[subscribeIndex].attachments[attachmentIndex]" [type]="original" [cssClass]="'profilefirstimg'"></app-attachment>
+            <button class="btn preBtn" (click)="prev()" type="button" *ngIf="attachmentIndex !== 1"><i class="fa fa-chevron-left"></i></button>
+            <button class="btn nextBtn" (click)="next()" type="button" *ngIf="(attachmentIndex+1) < attachmentsLength"><i class="fa fa-chevron-right"></i></button>
+        </div>
+    </div>
+</ng-template>
