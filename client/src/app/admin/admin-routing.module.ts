@@ -19,6 +19,34 @@ const routes: Routes = [
                     )
             },
             {
+                path: 'appointments',
+                loadChildren: () =>
+                    import('./appointment/appointment.module').then(
+                        (m) => m.AppointmentModule
+                    )
+            },
+            {
+                path: 'testing_centers',
+                loadChildren: () =>
+                    import('./dashboard/dashboard.module').then(
+                        (m) => m.DashboardModule
+                    )
+            },
+            {
+                path: 'time_slot',
+                loadChildren: () =>
+                    import('./dashboard/dashboard.module').then(
+                        (m) => m.DashboardModule
+                    )
+            },
+            {
+                path: 'custom_time_slot',
+                loadChildren: () =>
+                    import('./dashboard/dashboard.module').then(
+                        (m) => m.DashboardModule
+                    )
+            },
+            {
                 path: 'actions/:api',
                 loadChildren: () =>
                     import('./crud/crud.module').then((m) => m.CrudModule)
