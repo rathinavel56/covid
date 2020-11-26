@@ -9,9 +9,51 @@ import { routerTransition } from '../../router.animations';
     animations: [routerTransition()]
 })
 export class TimeSlotComponent implements OnInit {
-    public alerts: Array<any> = [];
+    timeSlots: any = [];
+    schedules: any = [];
 
     constructor() {}
 
-    ngOnInit() {}
+    ngOnInit() {
+        for (let i = 0; i <= 23; i++) {
+            let timeValue = (i.toString().length === 1) ? ('0' + i) : i;
+            this.timeSlots.push({
+                time: timeValue + ':00',
+                slot: 0
+            });
+            this.timeSlots.push({
+                time: timeValue + ':30',
+                slot: 0
+            });
+        }
+        this.schedules = [{
+            day: 'Sun',
+            type: 0,
+            timeSlots: this.timeSlots
+        },{
+            day: 'Mon',
+            type: 0,
+            timeSlots: this.timeSlots
+        },{
+            day: 'Tue',
+            type: 0,
+            timeSlots: this.timeSlots
+        },{
+            day: 'Wed',
+            type: 0,
+            timeSlots: this.timeSlots
+        },{
+            day: 'Thu',
+            type: 0,
+            timeSlots: this.timeSlots
+        },{
+            day: 'Fri',
+            type: 0,
+            timeSlots: this.timeSlots
+        },{
+            day: 'Sat',
+            type: 0,
+            timeSlots: this.timeSlots
+        }];
+    }
 }

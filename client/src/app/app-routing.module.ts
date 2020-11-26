@@ -31,43 +31,10 @@ const routes: Routes = [
             import('./login/login.module').then((m) => m.LoginModule)
     },
     {
-        path: 'signup',
-        loadChildren: () =>
-            import('./signup/signup.module').then((m) => m.SignupModule)
-    },
-    {
-        path: 'forgot-password',
-        loadChildren: () =>
-            import('./forgotpassword/forgotpassword.module').then(
-                (m) => m.ForgotpasswordModule
-            )
-    },
-    {
         path: 'transaction',
         loadChildren: () =>
             import('./transaction/transaction.module').then(
                 (m) => m.TransactionModule
-            )
-    },
-    {
-        path: 'resend-link',
-        loadChildren: () =>
-            import('./resendlink/resendlink.module').then(
-                (m) => m.ResendlinkModule
-            )
-    },
-    {
-        path: 'reset-password',
-        loadChildren: () =>
-            import('./resetpassword/resetpassword.module').then(
-                (m) => m.ResetpasswordModule
-            )
-    },
-    {
-        path: 'change-password',
-        loadChildren: () =>
-            import('./passwordchanged/passwordchanged.module').then(
-                (m) => m.PasswordchangedModule
             )
     },
     {

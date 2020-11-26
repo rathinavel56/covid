@@ -44,16 +44,14 @@ export class CrudComponent {
     const menus = this.settings.MENU;
     if (!menus[1].isFormat) {
         menus.forEach(formatMenu => {
-         if (formatMenu.title === 'Users') {
-            formatMenu.listview.fields = [...formatMenu.listview.fields, ...menus[1].add.fields];
+         if (formatMenu.copyFields) {
             formatMenu.listview.fields = formatMenu.listview.fields.filter((x) => (x.list === true));
-            const addFields = menus[1].add.fields.filter((x) => (x.add === true));
-            formatMenu.add.fields = menus[1].add.fields.filter((x) => (x.add === true));
+            formatMenu.add.fields = formatMenu.listview.fields.filter((x) => (x.add === true));
             formatMenu.edit = {
-              fields: menus[1].add.fields.filter((x) => (x.edit === true))
+              fields: formatMenu.listview.fields.filter((x) => (x.edit === true))
             };
             formatMenu.view = {
-              fields: menus[1].add.fields.filter((x) => (x.view === true))
+              fields: formatMenu.listview.fields.filter((x) => (x.view === true))
             };
           } else if (formatMenu.child_sub_menu) {
               formatMenu.child_sub_menu.forEach(childMenu => {

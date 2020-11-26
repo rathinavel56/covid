@@ -1,4 +1,3 @@
-import { ImalistingModule } from './../../../../imalisting/imalisting.module';
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { CrudService } from '../../../../api/services/crud.service';

@@ -1,5 +1,35 @@
-<!-- @format -->
-
 <div [@routerTransition]>
-   time_slot
+   <div class="row">
+      <div class="col-md-12">
+         <table style="width: 100%;">
+            <tr>
+               <th>
+                  <label>Days</label>
+               </th>
+               <th>
+                  <label>Holiday</label>
+               </th>
+               <th>
+                  <label>TimeSlot</label>
+               </th>
+            </tr>
+            <tr *ngFor="let schedule of schedules">
+               <td>
+                  {{schedule.day}}
+               </td>
+               <td>
+                  <input type="checkbox" [(ngModel)]="schedule.type" [ngModelOptions]="{standalone: true}"/>
+               </td>
+               <td>
+                  <div style="display: flex;flex-wrap: wrap;">
+                     <span *ngFor="let timeSlot of schedule.timeSlots">
+                        <input style="width:50px" type="number" [(ngModel)]="timeSlot.slot" [ngModelOptions]="{standalone: true}"/><br>{{timeSlot.time}}
+                     </span>
+                  </div>
+               </td>
+            </tr>
+         </table>
+      </div>
+   </div>
+   <button type="button" class="btn btn-primary">Submit</button>
 </div>

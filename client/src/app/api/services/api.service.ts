@@ -267,14 +267,14 @@ export class ApiService {
             sessionStorage.removeItem('access_token');
             sessionStorage.removeItem('refresh_token');
             sessionStorage.setItem('backend_failure', 'true');
-           // window.location.href = '/login';
+            window.location.href = '/login';
         } else if (errObject.status === 401) {
             sessionStorage.removeItem('user_context');
             sessionStorage.removeItem('login_time');
             sessionStorage.removeItem('access_token');
             sessionStorage.removeItem('refresh_token');
             sessionStorage.setItem('session_expired', 'true');
-            //window.location.href = '/login';
+            window.location.href = '/login';
         } else if (errObject.status === 500) {
             alert(errObject.error.statusMessage);
         }
