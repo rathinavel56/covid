@@ -1226,9 +1226,13 @@
 
   .clsRightBlock {
     width: calc(100% - 230px);
-    @include pad(40px, 35px, null, 35px);
+    @include pad(30px, 35px, null, 35px);
     float : right;
     height: 100vh;
+
+    &.clsCollapsedLeft {
+      width: calc(100% - 60px);
+    }
   }
 }
 
