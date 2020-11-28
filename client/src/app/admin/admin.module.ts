@@ -8,6 +8,7 @@ import { SidebarComponent } from '../admin/components/sidebar/sidebar.component'
 import { DefaultHeaderComponent } from '../admin/components/header/default.header.component';
 import { SharedCommonCrudModule } from '../admin/common-shared/shared-common.crud.module';
 import { SessionService } from '../api/services/session-service';
+import { TopHeaderComponent } from './components/top-header/top-header.component';
 @NgModule({
     imports: [
         CommonModule,
@@ -18,10 +19,11 @@ import { SessionService } from '../api/services/session-service';
     declarations: [
         AdminComponent,
         DefaultHeaderComponent,
-        SidebarComponent
+        SidebarComponent,
+        TopHeaderComponent
     ],
     providers: [
         SessionService
     ]
 })
-export class AdminModule {}
+export class AdminModule { }
