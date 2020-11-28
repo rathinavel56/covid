@@ -1,5 +1,3 @@
-<!-- @format -->
-
 <!-- <nav
     class="sidebar"
     [ngClass]="{sidebarPushRight: isActive, collapsed: collapsed}"
@@ -48,7 +46,7 @@
 
 <nav class="navbar navbar-expand-lg">
     <div class="clearfix">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="javascript:void(0)">
             <img src="assets/images/logo_small.svg" alt="logo"> <span> B-ID Hub </span>
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -56,94 +54,27 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent" *ngIf="menus">
             <ul class="nav navbar-nav clsMenuList">
-                <li class="active">
-                    <a href="admin_dashboard.html" class="clsIcon clsOver">
-                        <span> Overview </span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="admin_users.html" class="clsIcon clsUser">
-                        <span> Users </span>
-                    </a>
-                </li>
-
-                <li class="dropdown">
-                    <a class="dropdown-toggle clsIcon clsPage" href="#" role="button" id="dropdownMenuButton"
+                <li *ngFor="let menu of menus" [ngClass]="{'dropdown': menu.child_sub_menu}">
+                    <a class="clsIcon clsPage" href="javascript:void(0)"(click)="redirect(menu.route, menu.child_sub_menu)" [ngClass]="{'dropdown-toggle': menu.child_sub_menu}" role="button" id="dropdownMenuButton"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span> Pages </span>
+                        <span> {{ menu.title }} </span>
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="#"> Personal </a>
-                        <a class="dropdown-item" href="#"> Business </a>
+                    <div *ngIf="menu.child_sub_menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="javascript:void(0)" (click)="redirect(child.route)" *ngFor="let child of menu.child_sub_menu"> {{ child.title }} </a>
                     </div>
-                </li>
-
-                <li>
-                    <a href="#" class="clsIcon clsPersonal">
-                        <span> App (personal) </span>
-                    </a>
-                </li>
-
-                <li class="dropdown">
-                    <a class="dropdown-toggle clsIcon clsBusiness" href="#" role="button" id="dropdownMenuButton"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span> App (business) </span>
-                    </a>
-
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="#"> App </a>
-                        <a class="dropdown-item" href="#"> Doc Scan </a>
-                        <a class="dropdown-item" href="#"> Age Scan </a>
-                    </div>
-                </li>
-
-                <li>
-                    <a href="#" class="clsIcon clsPending">
-                        <span> Pending Accounts </span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#" class="clsIcon clsAdmin">
-                        <span> Admin Users </span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#" class="clsIcon clsDiscover">
-                        <span> Discover </span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#" class="clsIcon clsFeed">
-                        <span> Feedback
-                            <span class="text-b lb-c"> (04) </span>
-                        </span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#" class="clsIcon clsMessage">
-                        <span>
-                            Messages <span class="text-b lb-c"> (13) </span>
-                        </span>
-                    </a>
                 </li>
             </ul>
-
             <ul class="nav navbar-nav clsChangePwd">
                 <li>
-                    <a href="#" class="clsIcon clsLock">
+                    <a href="javascript:void(0)" class="clsIcon clsLock">
                         <span> Change Password </span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="#" class="clsIcon clsLogout">
+                    <a href="javascript:void(0)" class="clsIcon clsLogout">
                         <span> Logout </span>
                     </a>
                 </li>
