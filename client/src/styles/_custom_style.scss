@@ -1226,7 +1226,7 @@
 
   .clsRightBlock {
     width: calc(100% - 230px);
-    @include pad(40px, 55px, null, 55px);
+    @include pad(40px, 35px, null, 35px);
     float : right;
     height: 100vh;
   }
@@ -1252,12 +1252,11 @@
 
 .clsProgress_tab {
   ul {
-    display: $ib;
-    border : 0px;
+    border: 0px;
 
-    li {
 
-      a {
+    a {
+      &.nav-link {
         @include pad(0px, 20px, 0px, 20px);
         @include mar(0px, 0px, 0px, 5px);
         @include radius(4px);
@@ -1272,10 +1271,8 @@
           color     : $white;
           border    : 0px;
         }
-      }
 
-      &.active {
-        a {
+        &.active {
           border     : 0px;
           background : $brand-primary;
           color      : $white;
@@ -1297,7 +1294,7 @@
 
 .clsDataValue {
   .clsInner {
-    @include pad(25px, 45px, 25px, 45px);
+    @include pad(25px, 35px, 25px, 35px);
     background: $light-blue;
     @include radius(29px);
     min-height: 230px;
