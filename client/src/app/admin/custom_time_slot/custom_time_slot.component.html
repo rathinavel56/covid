@@ -1,29 +1,53 @@
 <div [@routerTransition]>
-    <div class="row">
-       <div class="col-md-12">
-          <table style="width: 100%;">
-             <tr>
-                <th>
-                   <label>Holiday</label>
-                </th>
-                <th>
-                   <label>TimeSlot</label>
-                </th>
-             </tr>
-             <tr *ngFor="let schedule of schedules">
-                <td>
-                   <input type="checkbox" [(ngModel)]="schedule.type" [ngModelOptions]="{standalone: true}"/>
-                </td>
-                <td>
-                   <div style="display: flex;flex-wrap: wrap;">
-                      <span *ngFor="let timeSlot of schedule.timeSlots">
-                         <input style="width:50px" type="number" [(ngModel)]="timeSlot.slot" [ngModelOptions]="{standalone: true}"/><br>{{timeSlot.time}}
-                      </span>
-                   </div>
-                </td>
-             </tr>
-          </table>
-       </div>
-    </div>
-    <button type="button" class="btn btn-primary">Submit</button>
- </div>
+   <div class="container-fluid mt-30">
+      <div class="row">
+         <div class="col-sm-4">
+            Days
+         </div>
+
+         <div class="col-sm-4">
+            <div class="inline-show v-mid">
+               <input type="checkbox" id="holiday" checked="">
+               <label for="holiday" class="mb-0"> Holiday
+               </label>
+            </div>
+         </div>
+
+         <div class="col-sm-4">
+            <div class="inline-show v-mid">
+               <input type="checkbox" id="timeslot" checked="">
+               <label for="timeslot" class="mb-0"> TimeSlot
+               </label>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <div class="clearfix mb-20 pt-10">
+      <table class="table">
+         <tbody>
+            <tr *ngFor="let schedule of schedules">
+               <td>
+                  <!-- <input type="checkbox" [(ngModel)]="schedule.type" [ngModelOptions]="{standalone: true}"/> -->
+
+                  <input type="checkbox" id="custom_slot" [(ngModel)]="schedule.type"
+                     [ngModelOptions]="{standalone: true}">
+                  <label for="custom_slot" class="mb-0"></label>
+               </td>
+               <td>
+                  <div class="clsTimeSlot">
+                     <span *ngFor="let timeSlot of schedule.timeSlots">
+                        <input style="width:50px" type="number" [(ngModel)]="timeSlot.slot"
+                           [ngModelOptions]="{standalone: true}" /><br>{{timeSlot.time}}
+                     </span>
+                  </div>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+
+   <div class="clearfix text-right mb-20">
+      <button type="button" class="btn btn-primary">Submit</button>
+   </div>
+</div>

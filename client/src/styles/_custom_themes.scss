@@ -593,9 +593,9 @@ body .sfont {
 }
 
 .btn {
-  border-radius: 10px;
-  min-width    : 305px;
-  padding      : 12px 20px 12px;
+  border-radius   : 6px;
+  // min-width    : 305px;
+  padding         : 6px 12px 6px;
   @include header($base-size, inherit, 600, 1.56, normal);
   text-transform    : capitalize;
   border            : solid 1px transparent;
@@ -618,8 +618,17 @@ body .sfont {
     min-width: 258px;
   }
 
+  &.btn-lg {
+    padding      : 12px 20px 12px;
+    border-radius: 10px;
+  }
+
   &.clsMinWidth-170 {
     min-width: 170px;
+  }
+
+  &.clsMinWidth-305 {
+    min-width: 305px;
   }
 
   &.width_in {
@@ -718,6 +727,20 @@ body .sfont {
   &:focus {
     background: $white;
     color     : $light-blue;
+  }
+}
+
+.btn-info {
+  background  : $light-blue;
+  border-color: $light-blue;
+  color       : $white;
+
+  &:hover,
+  &:active,
+  &:focus {
+    background  : $light-blue;
+    border-color: $light-blue;
+    color       : $white;
   }
 }
 
@@ -1098,7 +1121,7 @@ label {
 
       tr {
         th {
-          padding: 20px 25px 20px;
+          padding: 20px 20px;
         }
       }
     }
@@ -1106,7 +1129,7 @@ label {
     tbody {
       tr {
         td {
-          padding: 15px 25px 7px;
+          padding: 15px 20px 7px;
         }
 
         &:first-child {

@@ -774,6 +774,7 @@
   .clsFormBlock {
 
     form {
+      min-width: 380px;
       max-width: 380px;
       margin   : 0 auto;
     }
@@ -1228,7 +1229,7 @@
     width: calc(100% - 230px);
     @include pad(30px, 35px, null, 35px);
     float : right;
-    height: 100vh;
+    height: 100%;
 
     &.clsCollapsedLeft {
       width: calc(100% - 60px);
@@ -1627,4 +1628,34 @@
   background: $light-blue;
   color     : $white;
   text-align: center;
+}
+
+.table-wrapper {
+  @include pad(15px, 20px, 15px, 20px);
+  @include mar(30px, null, 30px, null);
+  border       : 1px solid $dark-blue;
+  border-radius: 3px;
+  box-shadow   : 0 1px 1px rgba(0, 0, 0, .05);
+}
+
+.table-title {
+  padding-bottom: 15px;
+  background    : $dark-blue;
+  padding       : 16px 30px;
+  margin        : -15px -20px 10px;
+  border-radius : 3px 3px 0 0;
+
+  h2 {
+    font-size: $md-size - 6;
+    color    : $white;
+  }
+}
+
+.clsTimeSlot {
+  display  : flex;
+  flex-wrap: wrap;
+
+  span {
+    @include mar(null, 5px, 5px, 5px);
+  }
 }
