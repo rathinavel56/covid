@@ -1659,3 +1659,15 @@
     @include mar(null, 5px, 5px, 5px);
   }
 }
+
+.clsMob-show {
+  display: none;
+}
+
+body {
+  &.clsAdmin {
+    .imanavbar {
+      display: none;
+    }
+  }
+}
