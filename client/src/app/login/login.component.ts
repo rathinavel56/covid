@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { routerTransition } from '../router.animations';
@@ -37,9 +37,11 @@ export class LoginComponent extends BaseComponent implements OnInit {
         private userService: UserService,
         private sessionService: SessionService,
         private toastService: ToastService,
-        private authService: SocialAuthService
+        private authService: SocialAuthService,
+        private renderer: Renderer2
     ) {
         super();
+        this.renderer.addClass(document.body, 'clsAdmin');
     }
 
     ngOnInit() {
@@ -74,6 +76,10 @@ export class LoginComponent extends BaseComponent implements OnInit {
                 this.toastService.error('Please try again after some time');
             }
         });
+    }
+
+    ngOnDestroy() {
+        this.renderer.removeClass(document.body, 'clsAdmin');
     }
 
     googleSuccessHandler() {
@@ -138,7 +144,7 @@ export class LoginComponent extends BaseComponent implements OnInit {
             sessionStorage.setItem('access_token', this.user.access_token);
             sessionStorage.setItem('refresh_token', this.user.refresh_token);
             const dt = new Date();
-            dt.setMinutes( dt.getMinutes() + 60 );
+            dt.setMinutes(dt.getMinutes() + 60);
             sessionStorage.setItem(
                 'login_time', dt.toString()
             );
