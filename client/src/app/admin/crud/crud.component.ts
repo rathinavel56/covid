@@ -42,8 +42,10 @@ export class CrudComponent {
   setMenu() {
     this.settings = this.startupService.startupData();
     const menus = this.settings.MENU;
+    const session: any = JSON.parse(sessionStorage.getItem('user_context'));
     if (!menus[1].isFormat) {
         menus.forEach(formatMenu => {
+        if (!formatMenu.role_id || formatMenu.role_id.indexOf(session.role.id) > -1) {
          if (formatMenu.copyFields) {
             formatMenu.listview.fields = formatMenu.listview.fields.filter((x) => (x.list === true));
             formatMenu.add.fields = formatMenu.listview.fields.filter((x) => (x.add === true));
@@ -60,6 +62,7 @@ export class CrudComponent {
           } else {
             this.addParentMenus(formatMenu, menus);
           }
+        }
       });
       menus[1].isFormat = true;
       this.settings.MENU = menus;
@@ -87,7 +90,6 @@ export class CrudComponent {
         if (elementData.api === '/admin/instant_contestants') {
           listFields = [];
           listFields.push(formatMenu.listview.fields[0]);
-         // listFields.push(formatMenu.listview.fields[1]);
           listFields = [...listFields, ...elementData.listview.fields];
           elementData.listview.fields = listFields;
         } else {

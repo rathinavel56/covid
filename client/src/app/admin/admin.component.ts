@@ -9,6 +9,7 @@ import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 export class AdminComponent implements OnInit {
     collapedSideBar: boolean;
     collapsed: boolean;
+    isActive: boolean;
     @Output() collapsedEvent = new EventEmitter<boolean>();
 
     constructor() { }

@@ -77,14 +77,24 @@ export class UserService {
         return this.apiService.httpPostFile(url, request, queryParam);
     }
 
-    approval(): Observable<any> {
-        const url: string = AppConst.SERVER_URL.ATTACHMENTS;
-        return this.apiService.httpPut(url, null, null);
+    timeSlot(request: any): Observable<any> {
+        const url: string = AppConst.SERVER_URL.TIMESLOTS;
+        return this.apiService.httpPost(url, request);
     }
 
-    tickets(queryParam: QueryParam): Observable<any> {
-        const url: string = AppConst.SERVER_URL.TICKETS;
+    timeSlotDetails(): Observable<any> {
+        const url: string = AppConst.SERVER_URL.TIMESLOTS;
+        return this.apiService.httpGet(url, null);
+    }
+
+    customTimeSlotDetails(queryParam: QueryParam): Observable<any> {
+        const url: string = AppConst.SERVER_URL.CUSTOM_TIMESLOTS;
         return this.apiService.httpGet(url, queryParam);
+    }
+
+    customTimeSlot(request: any): Observable<any> {
+        const url: string = AppConst.SERVER_URL.CUSTOM_TIMESLOTS;
+        return this.apiService.httpPost(url, request);
     }
 
     logout(): Observable<any> {

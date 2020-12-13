@@ -22,23 +22,11 @@
          <table class="table table-sm">
             <thead class="">
                <tr>
-                  <!-- <th>table-responsive
-                    <span class="custom-checkbox">
-                    <input type="checkbox" id="selectAll">
-                    <label for="selectAll"></label>
-                    </span>
-                 </th> -->
                   <th class="text-center" *ngFor="let item of menu.listview.fields">{{item.label}}</th>
                </tr>
             </thead>
             <tbody>
                <tr *ngFor="let element of responseData">
-                  <!-- <td>
-                    <span class="custom-checkbox">
-                    <input type="checkbox" id="checkbox1" name="options[]" value="1">
-                    <label for="checkbox1"></label>
-                    </span>
-                 </td> -->
                   <td class="text-center" *ngFor="let elementChild of menu.listview.fields">
                      <span *ngIf="!elementChild.listActions">
                         <span *ngIf="elementChild['label'] === 'From User'">
@@ -61,6 +49,9 @@
                         </ul>
                      </span>
                   </td>
+               </tr>
+               <tr *ngIf="responseData && responseData.length === 0">
+                  <td colspan="{{menu.listview.fields.length}}">No Records</td>
                </tr>
             </tbody>
          </table>

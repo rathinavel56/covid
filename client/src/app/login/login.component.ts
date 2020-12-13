@@ -146,10 +146,8 @@ export class LoginComponent extends BaseComponent implements OnInit {
             if (this.activatedRoute.snapshot.queryParams && this.activatedRoute.snapshot.queryParams.f) {
                 const url = this.activatedRoute.snapshot.queryParams.f + '?' + this.activatedRoute.snapshot.fragment;
                 this.router.navigate([url]);
-            } else if (this.user.role.id === AppConst.ROLE.ADMIN || this.user.role.id === AppConst.ROLE.COMPANY) {
+            } else if (this.user.role.id === AppConst.ROLE.ADMIN || this.user.role.id === AppConst.ROLE.COMPANY || this.user.role.id === AppConst.ROLE.EMPLOYER) {
                 this.router.navigate(['/admin']);
-            } else if (this.user.role.id === AppConst.ROLE.CONTESTANT) {
-                this.router.navigate(['/profile/' + this.user.username]);
             } else {
                 this.router.navigate(['/']);
             }

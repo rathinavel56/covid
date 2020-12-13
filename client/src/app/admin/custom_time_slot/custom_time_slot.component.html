@@ -2,12 +2,12 @@
    <div class="container-fluid mt-30">
       <div class="row">
          <div class="col-sm-4">
-            Days
+            Date
          </div>
 
          <div class="col-sm-4">
             <div class="inline-show v-mid">
-               <input type="checkbox" id="holiday" checked="">
+               <input type="checkbox" id="holiday" [checked]="(schedule.type === 1)" (click)="updateSchedule(schedule)">
                <label for="holiday" class="mb-0"> Holiday
                </label>
             </div>
@@ -15,7 +15,6 @@
 
          <div class="col-sm-4">
             <div class="inline-show v-mid">
-               <input type="checkbox" id="timeslot" checked="">
                <label for="timeslot" class="mb-0"> TimeSlot
                </label>
             </div>
@@ -24,30 +23,35 @@
    </div>
 
    <div class="clearfix mb-20 pt-10">
-      <table class="table">
+      <table class="table"  *ngIf="(schedule | json) != '{}'">
          <tbody>
-            <tr *ngFor="let schedule of schedules">
+            <tr>
                <td>
-                  <!-- <input type="checkbox" [(ngModel)]="schedule.type" [ngModelOptions]="{standalone: true}"/> -->
-
-                  <input type="checkbox" id="custom_slot" [(ngModel)]="schedule.type"
-                     [ngModelOptions]="{standalone: true}">
-                  <label for="custom_slot" class="mb-0"></label>
+                  <div class="form-group">
+                     <div class="input-group">
+                       <input class="form-control" (dateSelect)="customTimeSlotDetails()"  placeholder="yyyy-mm-dd"
+                              name="dp" [(ngModel)]="customDate" ngbDatepicker #d="ngbDatepicker" style="width: 150px;" (click)="d.toggle()" >
+                       <!-- <div class="input-group-append">
+                         <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button"></button>
+                       </div> -->
+                     </div>
+                   </div>
                </td>
                <td>
-                  <div class="clsTimeSlot">
+                  <div class="clsTimeSlot" *ngIf="schedule.type === 0">
                      <span *ngFor="let timeSlot of schedule.timeSlots">
-                        <input style="width:50px" type="number" [(ngModel)]="timeSlot.slot"
-                           [ngModelOptions]="{standalone: true}" /><br>{{timeSlot.time}}
+                        <input style="width:50px" type="number" min="0" [(ngModel)]="timeSlot.slot" [ngModelOptions]="{standalone: true}" (change)="updatetimeSlot(timeSlot, $event)" /><br>{{timeSlot.time}}
                      </span>
                   </div>
+                  <div class="clsTimeSlot" *ngIf="schedule.type === 1">
+                    Holiday
+                 </div>
                </td>
             </tr>
          </tbody>
       </table>
    </div>
-
    <div class="clearfix text-right mb-20">
-      <button type="button" class="btn btn-primary">Submit</button>
+      <button type="button" class="btn btn-primary" (click)="onSubmit()">Submit</button>
    </div>
 </div>

@@ -34,7 +34,8 @@ export class AppConst {
         PAGES: '/pages',
         USER_IMAGE: '/user_image',
         SIZES: '/sizes',
-        TICKETS: '/tickets',
+        TIMESLOTS: '/time_slots',
+        CUSTOM_TIMESLOTS: '/custom_time_slots',
         LOGOUT: '/users/logout'
     };
 
@@ -68,7 +69,7 @@ export class AppConst {
     public static readonly ROLE = {
         ADMIN: 1,
         USER: 2,
-        CONTESTANT: 3,
+        EMPLOYER: 3,
         COMPANY: 4
     };
 

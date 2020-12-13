@@ -28,4 +28,5 @@ export interface QueryParam {
     filter_by?: string;
     ispaid?: number;
     type?: string;
+    date_detail?: string;
 }

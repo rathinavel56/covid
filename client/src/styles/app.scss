@@ -504,3 +504,8 @@ body {
         top: -26px;
     }
 }
+select {
+    .form-control {
+        background: none !important;
+    }
+}
