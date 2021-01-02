@@ -670,14 +670,27 @@
 }
 
 .custom-tab {
-  >ul {
-    >li {
-      >a {
-        @include mar(null, 70px, null, null);
-        @include pad(0px, 0px, 15px, 0px);
-        @include header_one($sm-size, $dark-blue, 600, 1.48, normal);
+  .nav-tabs {
+    .nav-link {
+      @include mar(null, 70px, null, null);
+      @include pad(0px, 0px, 15px, 0px);
+      @include header_one($sm-size, $dark-blue, 600, 1.48, normal);
+      border       : 0px;
+      border-bottom: 9px solid transparent;
+
+      &:hover,
+      &:focus,
+      &:active {
+        background   : transparent;
+        color        : $light-blue;
         border       : 0px;
-        border-bottom: 9px solid transparent;
+        border-bottom: 9px solid $light-blue;
+      }
+
+      &.active {
+        color        : $light-blue;
+        border       : 0px;
+        border-bottom: 9px solid $light-blue;
 
         &:hover,
         &:focus,
@@ -688,28 +701,11 @@
           border-bottom: 9px solid $light-blue;
         }
       }
+    }
 
-      &.active {
-        a {
-          color        : $light-blue;
-          border       : 0px;
-          border-bottom: 9px solid $light-blue;
-
-          &:hover,
-          &:focus,
-          &:active {
-            background   : transparent;
-            color        : $light-blue;
-            border       : 0px;
-            border-bottom: 9px solid $light-blue;
-          }
-        }
-      }
-
-      &:last-child {
-        a {
-          margin-right: 0px;
-        }
+    &:last-child {
+      a {
+        margin-right: 0px;
       }
     }
   }
@@ -1670,4 +1666,12 @@ body {
       display: none;
     }
   }
+}
+
+.cur-poin {
+  cursor: pointer;
+}
+
+.pad-top-5 {
+  padding-top: 5px;
 }
