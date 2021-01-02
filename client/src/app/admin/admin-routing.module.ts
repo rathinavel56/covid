@@ -19,6 +19,69 @@ const routes: Routes = [
                     )
             },
             {
+                path: 'change_password',
+                loadChildren: () =>
+                    import('./passwordchanged/passwordchanged.module').then(
+                        (m) => m.PasswordchangedModule
+                    )
+            },
+            {
+                path: 'employee',
+                loadChildren: () =>
+                    import('./employee/employee.module').then(
+                        (m) => m.EmployeeModule
+                    )
+            },
+            {
+                path: 'employeehistory',
+                loadChildren: () =>
+                    import('./employeehistory/employeehistory.module').then(
+                        (m) => m.EmployeeHistoryModule
+                    )
+            },
+            {
+                path: 'book',
+                loadChildren: () =>
+                    import('./book/book.module').then(
+                        (m) => m.BookModule
+                    )
+            },
+            {
+                path: 'employeeprofile',
+                loadChildren: () =>
+                    import('./employeeprofile/employeeprofile.module').then(
+                        (m) => m.EmployeeProfileModule
+                    )
+            },
+            {
+                path: 'messages',
+                loadChildren: () =>
+                    import('./message/message.module').then(
+                        (m) => m.MessageModule
+                    )
+            },
+            {
+                path: 'quarantine',
+                loadChildren: () =>
+                    import('./quarantine/quarantine.module').then(
+                        (m) => m.QuarantineModule
+                    )
+            },
+            {
+                path: 'test',
+                loadChildren: () =>
+                    import('./test/test.module').then(
+                        (m) => m.TestModule
+                    )
+            },
+            {
+                path: 'checkup',
+                loadChildren: () =>
+                    import('./checkup/checkup.module').then(
+                        (m) => m.CheckupModule
+                    )
+            },
+            {
                 path: 'time_slot',
                 loadChildren: () =>
                     import('./time_slot/time_slot.module').then(

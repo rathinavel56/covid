@@ -45,7 +45,7 @@ export class CrudComponent {
     const session: any = JSON.parse(sessionStorage.getItem('user_context'));
     if (!menus[1].isFormat) {
         menus.forEach(formatMenu => {
-        if (!formatMenu.role_id || formatMenu.role_id.indexOf(session.role.id) > -1) {
+        if (!formatMenu.role_id || formatMenu.role_id.indexOf(session.role_id) > -1) {
          if (formatMenu.copyFields) {
             formatMenu.listview.fields = formatMenu.listview.fields.filter((x) => (x.list === true));
             formatMenu.add.fields = formatMenu.listview.fields.filter((x) => (x.add === true));
@@ -54,6 +54,16 @@ export class CrudComponent {
             };
             formatMenu.view = {
               fields: formatMenu.listview.fields.filter((x) => (x.view === true))
+            };
+          } else if (!formatMenu.copyFields && !formatMenu.child_sub_menu) {
+            let feilds = formatMenu.listview;
+            formatMenu.listview.fields = feilds.fields.filter((x) => (x.list === true));
+            formatMenu.add.fields = feilds.fields.filter((x) => (x.add === true));
+            formatMenu.edit = {
+              fields: feilds.fields.filter((x) => (x.edit === true))
+            };
+            formatMenu.view = {
+              fields: feilds.fields.filter((x) => (x.view === true))
             };
           } else if (formatMenu.child_sub_menu) {
               formatMenu.child_sub_menu.forEach(childMenu => {
