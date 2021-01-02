@@ -40,6 +40,13 @@ const routes: Routes = [
                     )
             },
             {
+                path: 'feedback',
+                loadChildren: () =>
+                    import('./feedback/feedback.module').then(
+                        (m) => m.FeedbackModule
+                    )
+            },
+            {
                 path: 'book',
                 loadChildren: () =>
                     import('./book/book.module').then(
