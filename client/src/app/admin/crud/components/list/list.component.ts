@@ -15,7 +15,10 @@ import Swal from 'sweetalert2';
 export class ListComponent implements OnInit {
   public menu: any;
   public responseData: any;
+  public metaData: any;
   public settings: any;
+  public page = 1;
+  public previousPage: any;
 
   constructor(private crudService: CrudService,
     private toastService: ToastService,
@@ -43,11 +46,22 @@ export class ListComponent implements OnInit {
       if (this.menu && this.menu.query) {
         queryParam.class = this.menu.query;
       }
+      if (this.previousPage) {
+        queryParam.page = this.previousPage;
+      }
       this.crudService.get(this.menu.api, queryParam)
       .subscribe((responseApi) => {
           this.responseData = responseApi.data;
+          this.metaData = responseApi._metadata;
           this.toastService.clearLoading();
       });
+  }
+
+  loadPage(page: number) {
+    if (page !== this.previousPage) {
+      this.previousPage = page;
+      this.getRecords();
+    }
   }
 
   getValue(name: any, obj: any) {
