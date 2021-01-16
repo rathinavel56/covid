@@ -26,6 +26,8 @@ export class AddComponent implements OnInit {
   public hoveredDate: NgbDate | null = null;
   public fromDate: NgbDate;
   public toDate: NgbDate | null = null;
+  public windowData: any = window;
+  public isFirstTime: any = false;
 
   constructor(private crudService: CrudService,
     private toastService: ToastService,
@@ -35,12 +37,26 @@ export class AddComponent implements OnInit {
     public router: Router,
     private httpClient: HttpClient,
     calendar: NgbCalendar) {
+      let thiss = this;
+      this.windowData.top.addFunc = function (value) {
+        if (!thiss.isFirstTime) {
+          setTimeout(() => {
+            thiss.meunuItem(value);
+            thiss.isFirstTime = true;
+          }, 500);
+        } else {
+          thiss.meunuItem(value);
+        }
+      };
       this.fromDate = calendar.getToday();
       this.toDate = calendar.getNext(calendar.getToday(), 'd', 10);
-    }
+  }
 
-  @Input('menu_detail')
-  set meunuItem(value: string) {
+  ngOnInit(): void {
+    
+  }
+    
+  meunuItem(value: any) {
     if (value) {
       this.menu = value;
       this.menu.add.fields.forEach((element, index) => {
@@ -73,9 +89,6 @@ export class AddComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-  }
-
   onTagsChangedEventHandler(event: TagsChangedEvent, item): void {
     if (event.change === 'add') {
       const index = item.options.findIndex(x => (x.id === event.tag.id));
@@ -91,8 +104,14 @@ export class AddComponent implements OnInit {
     this._location.back();
   }
 
-  changeSelect(item, event) {
-    item.value = event.target.value;
+  changeSelect(item, event, setOption) {
+    if (setOption) {
+      item.value = setOption.find((e) =>{
+        e.setOption.id == event.target.value; 
+      });
+    } else {
+      item.value = event.target.value;
+    }
   }
 
   uploadImage(event, item) {
@@ -166,6 +185,8 @@ export class AddComponent implements OnInit {
         inValid.push(element.label);
       } else if (element.name === 'email' && reg.test(element.value) === false) {
         inValid.push('Enter the valid email');
+      } else if (element.type === 'date') {
+        formData[element.name] = element.value.year + '-' + (element.value.month.toString().length == 1 ? ('0' + element.value.month) : element.value.month) + '-' + (element.value.day.toString().length == 1 ? ('0' + element.value.day) : element.value.day);
       } else {
         formData[element.name] = (element.type === 'file') ? element.file : element.value;
       }

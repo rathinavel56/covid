@@ -2,18 +2,18 @@
     <div class="pt-40 clearfix custom-tab">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-                <a href="#activity" class="nav-link" aria-controls="activity" role="tab" data-toggle="tab"> Activity
+                <a href="#activity" class="nav-link active" aria-controls="activity" role="tab" data-toggle="tab" (click)="getActivity()">
+                    Activity
                 </a>
             </li>
-
             <li class="nav-item">
-                <a href="#tested" class="nav-link active" aria-controls="tested" role="tab" data-toggle="tab"> Tested
+                <a href="#tested" class="nav-link" aria-controls="tested" role="tab" data-toggle="tab" (click)="getTested()"> Tested
                 </a>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div role="tabpanel" class="tab-pane" id="activity">
+            <div role="tabpanel" class="tab-pane active" id="activity">
                 <div class="clearfix mt-20">
                     <form action="" class="form-inline">
                         <div class="form-group pr-20">
@@ -36,138 +36,80 @@
                     </form>
                 </div>
 
-                <div class="clearfix mt-30 clsReceipt-table">
+                <div class="clearfix mt-30 clsReceipt-table" *ngIf="activities">
                     <table class="table table-sm">
                         <thead>
                             <tr>
                                 <th> Today </th>
-                                <th class="text-right"> Total Activity 03 </th>
+                                <th class="text-right"> Total Activity {{activities.today ? activities.today.length : 0}}</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            <tr>
+                            <tr *ngFor="let activitity of activities.today; let indexActivitity = index">
                                 <td>
                                     <div class="media">
                                         <div class="media-left pr-20">
-                                            <img class="clsCircleImg" src="assets/images/user_icon.png" alt="...">
+                                            <app-attachment *ngIf="activitity.user.attachment"
+                                                [attachment]="activitity.user.attachment" [cssClass]="'clsCircleImg'"
+                                                [type]="original">
+                                            </app-attachment>
                                         </div>
                                         <div class="media-body media-middle">
-                                            <p> Ronald Porter </p>
+                                            <p> {{activitity.user.first_name}} </p>
                                         </div>
                                     </div>
                                 </td>
-
                                 <td>
-                                    07 January 2019 | 18:36
+                                    {{activitity.fill_date}}
                                 </td>
                             </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="media">
-                                        <div class="media-left pr-20">
-                                            <img class="clsCircleImg" src="assets/images/user_icon.png" alt="...">
-                                        </div>
-                                        <div class="media-body media-middle">
-                                            <p> Ronald Porter </p>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    07 January 2019 | 18:36
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="media">
-                                        <div class="media-left pr-20">
-                                            <img class="clsCircleImg" src="assets/images/user_icon.png" alt="...">
-                                        </div>
-                                        <div class="media-body media-middle">
-                                            <p> Ronald Porter </p>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    07 January 2019 | 18:36
-                                </td>
+                            <tr *ngIf="!activities.today || activities.today.length == 0">
+                                <td colspan="2">No Records</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="clearfix mt-30 clsReceipt-table mb-30">
+                <div class="clearfix mt-30 clsReceipt-table mb-30" *ngIf="activities">
                     <table class="table table-sm">
                         <thead>
                             <tr>
                                 <th> Yesterday </th>
-                                <th class="text-right"> Total Activity 10 </th>
+                                <th class="text-right"> Total Activity {{activities.yesterday ? activities.yesterday.length : 0}}</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            <tr>
+                            <tr *ngFor="let activitity of activities.yesterday; let indexActivitity = index">
                                 <td>
                                     <div class="media">
                                         <div class="media-left pr-20">
-                                            <img class="clsCircleImg" src="assets/images/user_icon.png" alt="...">
+                                            <app-attachment *ngIf="activitity.user.attachment"
+                                                [attachment]="activitity.user.attachment" [cssClass]="'clsCircleImg'"
+                                                [type]="original">
+                                            </app-attachment>
                                         </div>
                                         <div class="media-body media-middle">
-                                            <p> Ronald Porter </p>
+                                            <p> {{activitity.user.first_name}} </p>
                                         </div>
                                     </div>
                                 </td>
-
                                 <td>
-                                    07 January 2019 | 18:36
+                                    {{activitity.fill_date}}
                                 </td>
                             </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="media">
-                                        <div class="media-left pr-20">
-                                            <img class="clsCircleImg" src="assets/images/user_icon.png" alt="...">
-                                        </div>
-                                        <div class="media-body media-middle">
-                                            <p> Ronald Porter </p>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    07 January 2019 | 18:36
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <div class="media">
-                                        <div class="media-left pr-20">
-                                            <img class="clsCircleImg" src="assets/images/user_icon.png" alt="...">
-                                        </div>
-                                        <div class="media-body media-middle">
-                                            <p> Ronald Porter </p>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    07 January 2019 | 18:36
-                                </td>
+                            <tr *ngIf="!activities.yesterday || activities.yesterday.length == 0">
+                                <td colspan="2">No Records</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div role="tabpanel" class="tab-pane active" id="tested">
+            <div role="tabpanel" class="tab-pane" id="tested">
                 <div class="clearfix pt-40">
-                    <p class="text-21 db-c"> Positive (3) </p>
+                    <p class="text-21 db-c" *ngIf="tested.positive"> Positive ({{tested.positive ? tested.positive.length : 0}}) </p>
 
                     <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive">
                         <table class="table table-sm mb-20">
@@ -178,103 +120,38 @@
                                     <th> Tested Date </th>
                                     <th> Type of Test </th>
                                     <th> Status </th>
-                                    <th> </th>
+                                    <!-- <th> </th> -->
                                     <th> </th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                <tr>
-                                    <td> 1 </td>
-
+                                <tr *ngFor="let positive of tested.positive; let indexPositive = index">
+                                    <td>{{indexPositive + 1}}</td>
                                     <td>
                                         <div class="media">
                                             <div class="media-left pr-20">
-                                                <img class="clsCircleImg" src="assets/images/marketing_icon.svg"
-                                                    alt="...">
+                                                <app-attachment *ngIf="positive.attachment"
+                                                    [attachment]="positive.attachment"
+                                                    [cssClass]="'clsCircleImg'" [type]="original">
+                                                </app-attachment>
                                             </div>
                                             <div class="media-body media-middle">
-                                                <p> Ronald Porter </p>
+                                                <p> {{positive.user.first_name}} </p>
                                             </div>
                                         </div>
                                     </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> RT-PCR </td>
-
+                                    <td> {{positive.last_test_date}} </td>
+                                    <td> {{positive.test_type.name}} </td>
                                     <td> Positive </td>
-
-                                    <td>
+                                    <!-- <td>
                                         <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
+                                    </td> -->
                                     <td>
                                         <button class="btn btn-sm btn-link width_in"> View </button>
                                     </td>
-
                                 </tr>
-
-                                <tr>
-                                    <td> 2 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <div class="media-left pr-20">
-                                                <img class="clsCircleImg" src="assets/images/marketing_icon.svg"
-                                                    alt="...">
-                                            </div>
-                                            <div class="media-body media-middle">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> Rapid Ag </td>
-
-                                    <td> Positive </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-                                    <td> 3 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <div class="media-left pr-20">
-                                                <img class="clsCircleImg" src="assets/images/marketing_icon.svg"
-                                                    alt="...">
-                                            </div>
-                                            <div class="media-body media-middle">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> RT-PCR </td>
-
-                                    <td> Positive </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-
+                                <tr *ngIf="!tested.positive || tested.positive.length == 0">
+                                    <td colspan="5">No Records</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -282,8 +159,7 @@
                 </div>
 
                 <div class="clearfix pt-60">
-                    <p class="text-21 db-c"> Negative (2) </p>
-
+                    <p class="text-21 db-c"> Negative ({{tested.negative ? tested.negative.length : 0}}) </p>
                     <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive mb-20">
                         <table class="table table-sm mb-20">
                             <thead>
@@ -293,71 +169,38 @@
                                     <th> Tested Date </th>
                                     <th> Type of Test </th>
                                     <th> Status </th>
-                                    <th> </th>
+                                    <!-- <th> </th> -->
                                     <th> </th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                <tr>
-                                    <td> 1 </td>
-
+                                <tr *ngFor="let negative of tested.negative; let indexNegative = index">
+                                    <td>{{indexNegative + 1}}</td>
                                     <td>
                                         <div class="media">
                                             <div class="media-left pr-20">
-                                                <img class="clsCircleImg" src="assets/images/marketing_icon.svg"
-                                                    alt="...">
+                                                <app-attachment *ngIf="negative.attachment"
+                                                    [attachment]="negative.user.attachment"
+                                                    [cssClass]="'clsCircleImg'" [type]="original">
+                                                </app-attachment>
                                             </div>
                                             <div class="media-body media-middle">
-                                                <p> Ronald Porter </p>
+                                                <p> {{negative.first_name}} </p>
                                             </div>
                                         </div>
                                     </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> RT-PCR </td>
-
+                                    <td> {{negative.last_test_date}} </td>
+                                    <td> {{negative.test_type.name}} </td>
                                     <td> Negative </td>
-
-                                    <td>
+                                    <!-- <td>
                                         <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
+                                    </td> -->
                                     <td>
                                         <button class="btn btn-sm btn-link width_in"> View </button>
                                     </td>
-
                                 </tr>
-
-                                <tr>
-                                    <td> 2 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <div class="media-left pr-20">
-                                                <img class="clsCircleImg" src="assets/images/marketing_icon.svg"
-                                                    alt="...">
-                                            </div>
-                                            <div class="media-body media-middle">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> Rapid Ag </td>
-
-                                    <td> Positive </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
+                                <tr *ngIf="!tested.negative || tested.negative.length == 0">
+                                    <td colspan="5">No Records</td>
                                 </tr>
                             </tbody>
                         </table>

@@ -15,18 +15,32 @@ import Swal from 'sweetalert2';
 export class ListComponent implements OnInit {
   public menu: any;
   public responseData: any;
-  public metaData: any;
   public settings: any;
-  public page = 1;
-  public previousPage: any;
+  public windowData: any = window;
+  public isFirstTime: any = false;
 
   constructor(private crudService: CrudService,
     private toastService: ToastService,
     public sessionService: SessionService,
-    public router: Router) { }
+    public router: Router) {
+      let thiss = this;
+      this.windowData.top.listFunc = function (value) {
+        if (!thiss.isFirstTime) {
+          setTimeout(() => {
+            thiss.meunuItem(value);
+            thiss.isFirstTime = true;
+          }, 500);
+        } else {
+          thiss.meunuItem(value);
+        }
+      };
+    }
 
-  @Input('menu_detail')
-  set meunuItem(value: any) {
+    ngOnInit(): void {
+      
+    }
+    
+  meunuItem(value: any) {
     if (value) {
       this.menu = value;
       this.menu.listview.fields = value.listview.fields.filter((x) => (x.list === true));
@@ -36,32 +50,17 @@ export class ListComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-
-  }
-
   getRecords() {
     this.toastService.showLoading();
       const queryParam: QueryParam = {};
       if (this.menu && this.menu.query) {
         queryParam.class = this.menu.query;
       }
-      if (this.previousPage) {
-        queryParam.page = this.previousPage;
-      }
       this.crudService.get(this.menu.api, queryParam)
       .subscribe((responseApi) => {
           this.responseData = responseApi.data;
-          this.metaData = responseApi._metadata;
           this.toastService.clearLoading();
       });
-  }
-
-  loadPage(page: number) {
-    if (page !== this.previousPage) {
-      this.previousPage = page;
-      this.getRecords();
-    }
   }
 
   getValue(name: any, obj: any) {

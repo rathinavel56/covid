@@ -11,7 +11,7 @@ import { UserService } from '../../api/services/user.service';
     styleUrls: ['./employee.component.scss']
 })
 export class EmployeeComponent implements OnInit {
-    public changedSuccess: boolean;
+    public users: any;
     constructor(
         public router: Router,
         private formBuilder: FormBuilder,
@@ -20,5 +20,13 @@ export class EmployeeComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.getUsers();
+    }
+
+    getUsers() {
+        this.userService.getUserAll()
+        .subscribe((response) => {
+            this.users = response.data;
+        });
     }
 }

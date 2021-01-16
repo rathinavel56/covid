@@ -11,7 +11,7 @@ import { UserService } from '../../api/services/user.service';
     styleUrls: ['./checkup.component.scss']
 })
 export class CheckupComponent implements OnInit {
-    public changedSuccess: boolean;
+    public activities: any;
     constructor(
         public router: Router,
         private formBuilder: FormBuilder,
@@ -20,5 +20,16 @@ export class CheckupComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.getActivity();
+    }
+
+    getActivity() {
+        this.toastService.showLoading();
+        this.activities = [];
+        this.userService.getActivity()
+        .subscribe((response) => {
+            this.activities = response;
+            this.toastService.clearLoading();
+        });
     }
 }

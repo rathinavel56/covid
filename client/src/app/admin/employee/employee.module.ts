@@ -7,8 +7,12 @@ import { EmployeeComponent } from './employee.component';
 import { LanguageTranslationModule } from '../../shared/modules/language-translation/language-translation.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '../../api/services/user.service';
+import { AgePipe } from '../../utils/age';
 @NgModule({
-    declarations: [EmployeeComponent],
+    declarations: [
+        EmployeeComponent,
+        AgePipe
+    ],
     imports: [
         CommonModule,
         EmployeeRoutingModule,

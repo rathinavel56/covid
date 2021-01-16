@@ -92,7 +92,7 @@ export class SidebarComponent implements OnInit {
     redirect(url: string): void {
         if (url === '/admin/actions/logout') {
             this.logout();
-        } else {
+        } else if (url) {
             this.router.navigate([ url ]);
         }
     }

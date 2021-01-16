@@ -380,8 +380,6 @@
       appearance        : none;
 
       &.form-control {
-        background  : $light-blue;
-        border-color: $light-blue;
         color       : $white;
         height      : 48px;
         @include radius(6px);

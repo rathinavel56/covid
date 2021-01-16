@@ -13,18 +13,32 @@
                 <input type="{{item.type}}" [(ngModel)]="item.value" [ngModelOptions]="{standalone: true}"
                     class="form-control" id="{{item.name}}" placeholder="{{item.placeholder}}">
             </div>
-            <div class="form-group" *ngIf="item.type === 'select' && !item.id_fill">
+            <div class="form-group" *ngIf="item.type === 'select' && !item.id_fill && !item.option">
                 <label for="{{item.name}}">{{item.label}} <span *ngIf="item.is_required">*</span></label>
                 <select class="form-control" id="{{item.name}}" [(ngModel)]="item.data"
-                    (change)="changeSelect(item, $event)">
-                    <option *ngFor="let option of item.options;" [value]="option.id">{{option[item.name]}}</option>
+                    (change)="changeSelect(item, $event, false)">
+                    <option *ngFor="let option of item.options;" [value]="option.id" [selected]="(option === item.value || option.name === item.value || option.id === item.value)">{{option[item.name]}}</option>
                 </select>
             </div>
-            <div class="form-group" *ngIf="item.type === 'select' && item.id_fill">
+            <div class="form-group" *ngIf="item.type === 'select' && item.id_fill && !item.name_fill && !item.option">
                 <label for="{{item.name}}">{{item.label}} <span *ngIf="item.is_required">*</span></label>
                 <select class="form-control" id="{{item.name}}" [(ngModel)]="item.data"
-                    (change)="changeSelect(item, $event)">
-                    <option *ngFor="let option of item.options;" [value]="option.id">{{option.name}}</option>
+                    (change)="changeSelect(item, $event, false)">
+                    <option *ngFor="let option of item.options;" [value]="option.id" [selected]="(option === item.value || option.name === item.value || option.id === item.value)">{{option.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="item.type === 'select' && item.id_fill && item.name_fill && !item.option">
+                <label for="{{item.name}}">{{item.label}} <span *ngIf="item.is_required">*</span></label>
+                <select class="form-control" id="{{item.name}}" [(ngModel)]="item.data"
+                    (change)="changeSelect(item, $event, false)">
+                    <option *ngFor="let option of item.options;" [value]="option.id" [selected]="(option === item.value || option.name === item.value || option.id === item.value)">{{option[item.name_fill]}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="item.type === 'select' && item.id_fill && !item.name_fill && item.option">
+                <label for="{{item.name}}">{{item.label}} <span *ngIf="item.is_required">*</span></label>
+                <select class="form-control" id="{{item.name}}" [(ngModel)]="item.data"
+                    (change)="changeSelect(item, $event, true)">
+                    <option *ngFor="let option of item.options;" [value]="option" [selected]="(option === item.value || option.name === item.value || option.id === item.value)">{{option.name}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="item.type === 'searchable'">

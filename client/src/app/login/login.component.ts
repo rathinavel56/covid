@@ -137,23 +137,19 @@ export class LoginComponent extends BaseComponent implements OnInit {
             this.user.error.code === AppConst.SERVICE_STATUS.SUCCESS
         ) {
             this.toastService.success(this.user.error.message);
-            sessionStorage.setItem(
-                'user_context',
-                JSON.stringify(this.user)
-            );
-            sessionStorage.setItem('access_token', this.user.access_token);
-            sessionStorage.setItem('refresh_token', this.user.refresh_token);
-            const dt = new Date();
-            dt.setMinutes(dt.getMinutes() + 60);
-            sessionStorage.setItem(
-                'login_time', dt.toString()
-            );
-            this.sessionService.isLogined();
             if (this.activatedRoute.snapshot.queryParams && this.activatedRoute.snapshot.queryParams.f) {
+                this.setLoginDetails();
                 const url = this.activatedRoute.snapshot.queryParams.f + '?' + this.activatedRoute.snapshot.fragment;
                 this.router.navigate([url]);
-            } else if (this.user.role.id === AppConst.ROLE.ADMIN || this.user.role.id === AppConst.ROLE.COMPANY || this.user.role.id === AppConst.ROLE.EMPLOYER) {
-                this.router.navigate(['/admin']);
+            } else if (this.user.role.id === AppConst.ROLE.ADMIN) {
+                this.setLoginDetails();
+                this.router.navigate(['/admin/actions/company']);    
+            } else if (this.user.role.id === AppConst.ROLE.EMPLOYER) {
+                this.setLoginDetails();
+                this.router.navigate(['admin/actions/users']);
+            } else if (this.user.role.id === AppConst.ROLE.COMPANY) {
+                this.setLoginDetails();
+                this.router.navigate(['admin/actions/users']);
             } else {
                 this.router.navigate(['/']);
             }
@@ -161,6 +157,22 @@ export class LoginComponent extends BaseComponent implements OnInit {
             this.toastService.error(this.user.error.message);
         }
         this.toastService.clearLoading();
+    }
+
+    setLoginDetails() {
+        sessionStorage.setItem(
+            'user_context',
+            JSON.stringify(this.user)
+        );
+        sessionStorage.setItem('access_token', this.user.access_token);
+        sessionStorage.setItem('refresh_token', this.user.refresh_token);
+        const dt = new Date();
+        dt.setMinutes(dt.getMinutes() + 60);
+        sessionStorage.setItem(
+            'login_time', dt.toString()
+        );
+        this.sessionService.isLogined();
+        
     }
 
     signInWithGoogle(): void {

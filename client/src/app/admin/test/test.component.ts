@@ -11,7 +11,8 @@ import { UserService } from '../../api/services/user.service';
     styleUrls: ['./test.component.scss']
 })
 export class TestComponent implements OnInit {
-    public changedSuccess: boolean;
+    public activities: any;
+    public tested: any;
     constructor(
         public router: Router,
         private formBuilder: FormBuilder,
@@ -20,5 +21,28 @@ export class TestComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.getActivity();
+    }
+
+    getActivity() {
+        this.toastService.showLoading();
+        this.activities = [];
+        this.tested = [];
+        this.userService.getActivity()
+        .subscribe((response) => {
+            this.activities = response;
+            this.toastService.clearLoading();
+        });
+    }
+    
+    getTested() {
+        this.toastService.showLoading();
+        this.activities = [];
+        this.tested = [];
+        this.userService.getTested()
+        .subscribe((response) => {
+            this.tested = response;
+            this.toastService.clearLoading();
+        });
     }
 }

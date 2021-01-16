@@ -57,6 +57,21 @@ export class UserService {
         return this.apiService.httpGet(url, queryParam);
     }
 
+    getUserAll(): Observable<any> {
+        const url: string = AppConst.SERVER_URL.ADMINUSER;
+        return this.apiService.httpGet(url, null);
+    }
+
+    getActivity(): Observable<any> {
+        const url: string = AppConst.SERVER_URL.ACTIVITY;
+        return this.apiService.httpGet(url, null);
+    }
+
+    getTested(): Observable<any> {
+        const url: string = AppConst.SERVER_URL.TESTED;
+        return this.apiService.httpGet(url, null);
+    }
+
     updateUser(user: User): Observable<User> {
         const userUrl: string = AppConst.SERVER_URL.USER;
         return this.apiService.httpPut(userUrl, user);

@@ -296,7 +296,7 @@ export class ApiService {
                 }
             }
         }
-        if (params) {
+        if (params && Object.keys(params).length !== 0) {
             const queryString = Object.keys(params)
                 .map(function(key) {
                     return key + '=' + params[key];
