@@ -12,6 +12,13 @@ import { UserService } from '../../api/services/user.service';
 })
 export class CheckupComponent implements OnInit {
     public activities: any;
+    public users: any;
+    public metaData: any;
+    public settings: any;
+    public page = 1;
+    public previousPage: any;
+    public type: any = 'All';
+    public status: any = 'Symptom';
     constructor(
         public router: Router,
         private formBuilder: FormBuilder,
@@ -31,5 +38,30 @@ export class CheckupComponent implements OnInit {
             this.activities = response;
             this.toastService.clearLoading();
         });
+    }
+    getUsers(typeData, status) {
+        if (typeData) {
+            this.type = typeData;
+        }
+        if (status) {
+            this.status = status;
+        }
+        this.users = [];  
+        this.toastService.showLoading();
+        this.userService.getUserAlls({
+            type: this.type,
+            status: this.status
+        })
+        .subscribe((response) => {
+            this.users = response.data;
+            this.metaData = response._metadata;
+            this.toastService.clearLoading();
+        });
+    }
+    loadPage(page: number) {
+        if (page !== this.previousPage) {
+            this.previousPage = page;
+            this.getUsers(this.type, this.status);
+        }
     }
 }

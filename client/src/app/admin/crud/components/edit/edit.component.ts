@@ -33,11 +33,11 @@ export class EditComponent implements OnInit {
       this.windowData.top.editFunc = function (value) {
         if (!thiss.isFirstTime) {
           setTimeout(() => {
-            thiss.meunuItem(value);
+            thiss.menuItem(value);
             thiss.isFirstTime = true;
           }, 500);
         } else {
-            thiss.meunuItem(value);
+            thiss.menuItem(value);
         }
       };
     }
@@ -46,7 +46,7 @@ export class EditComponent implements OnInit {
       
     }
     
-    meunuItem(value: any) {
+    menuItem(value: any) {
       if (value) {
         this.menu = value;
         if (this.menu.api !== '/admin/settings' && this.menu.api !== '/admin/payment_gateways') {

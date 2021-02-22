@@ -8,7 +8,7 @@
  * @package    Base
  * @subpackage Core
  */
-define('R_DEBUG', false);
+define('R_DEBUG', true);
 ini_set('display_errors', R_DEBUG);
 define('R_API_VERSION', 1);
 define('DS', DIRECTORY_SEPARATOR);
@@ -18,7 +18,7 @@ define('TMP_PATH', APP_PATH . DS . 'tmp');
 define('CACHE_PATH', TMP_PATH . DS . 'cache');
 define('R_DB_DRIVER', 'mysql');
 define('R_DB_HOST', 'localhost');
-define('R_DB_NAME', 'contest');
+define('R_DB_NAME', 'covid');
 define('R_DB_USER', 'root');
 define('R_DB_PASSWORD', 'Weblogic@123');
 define('R_DB_PORT', 3306);

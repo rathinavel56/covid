@@ -42,7 +42,7 @@ export class AttachmentComponent {
                 value.class + id + filename + this.imageClass
             ).toString();
             this.url =
-            'http://localhost:4200/images/' + this.imageClass + '/' +
+            'http://bluestoneid.com/images/' + this.imageClass + '/' +
                 value.class +
                 '/' +
                 id +
@@ -61,14 +61,14 @@ export class AttachmentComponent {
                 value.class + idVideo + fileVideoName + this.imageClass
             ).toString();
             this.url =
-                'http://localhost:4200/images/' + this.imageClass + '/' +
+                'http://bluestoneid.com/images/' + this.imageClass + '/' +
                 value.thumb.class +
                 '/' +
                 id +
                 '.' +
                 hash +
                 '.' + filename;
-            this.videoUrl = 'http://localhost:4200/images/' + this.imageClass + '/' +
+            this.videoUrl = 'http://bluestoneid.com/images/' + this.imageClass + '/' +
                             value.class +
                             '/' +
                             idVideo +

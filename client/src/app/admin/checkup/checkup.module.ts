@@ -8,6 +8,7 @@ import { LanguageTranslationModule } from '../../shared/modules/language-transla
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '../../api/services/user.service';
 import { SharedCommonModule } from '../../shared-common/shared-common.module';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 @NgModule({
     declarations: [CheckupComponent],
     imports: [
@@ -16,7 +17,8 @@ import { SharedCommonModule } from '../../shared-common/shared-common.module';
         LanguageTranslationModule,
         FormsModule,
         ReactiveFormsModule,
-        SharedCommonModule
+        SharedCommonModule,
+        NgbModule
     ],
     providers: [UserService]
 })

@@ -16,6 +16,11 @@ const routes: Routes = [
         canActivate: [AuthGuard]
     },
     {
+        path: 'forgot-password',
+        loadChildren: () =>
+            import('./forgotpassword/forgotpassword.module').then((m) => m.ForgotpasswordModule)
+    },
+    {
         path: 'page/:type',
         loadChildren: () =>
             import('./page/page.module').then((m) => m.PageModule)

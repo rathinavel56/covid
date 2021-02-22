@@ -7,6 +7,8 @@ import { QuarantineComponent } from './quarantine.component';
 import { LanguageTranslationModule } from '../../shared/modules/language-translation/language-translation.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '../../api/services/user.service';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { SharedCommonModule } from '../../shared-common/shared-common.module';
 @NgModule({
     declarations: [QuarantineComponent],
     imports: [
@@ -14,7 +16,9 @@ import { UserService } from '../../api/services/user.service';
         QuarantineRoutingModule,
         LanguageTranslationModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NgbModule,
+        SharedCommonModule
     ],
     providers: [UserService]
 })

@@ -24,8 +24,6 @@ class User extends AppModel
 		'company_id',
 		'role_id',
 		'username',
-		'email',
-		'mobile',
 		'is_archive',
 		'password',
 		'user_login_count',
@@ -59,7 +57,30 @@ class User extends AppModel
 		'subscription_end_date',
 		'device_details',
 		'instant_vote_pay_key',
-		'slug'
+		'slug',
+		'name',
+		'lat',
+		'lon',
+		'device_token',
+		'device_id',
+		'latitude',
+		'longitude',
+		'model',
+		'os',
+		'platform',
+		'version',
+		'account_update_action',
+		'detail_shared',
+		'account_update_finished',
+		'dob',
+		'gender',
+		'country_id',
+		'checkups',
+		'untested',
+		'quarantined',
+		'quarantined_days',
+		'reinstated',
+		'symptom'
     );	
     public $qSearchFields = array(
         'first_name',
@@ -70,9 +91,7 @@ class User extends AppModel
     public $hidden = array(
 		'created_at',
 		'updated_at',
-		'role_id',
 		'email',
-		'mobile',
 		'password',
 		'user_login_count',
 		'available_wallet_amount',
@@ -100,14 +119,7 @@ class User extends AppModel
 		'subscription_end_date'
     );
     public $rules = array(
-       'username' => [
-                'sometimes',
-                'required',
-                'min:3',
-                'max:15',
-                'regex:/^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*$/',
-            ],
-        'email' => 'sometimes|required|email',
+       'mobile' => 'sometimes|required',
         'password' => [
                 'sometimes',
                 'required',
@@ -152,6 +164,10 @@ class User extends AppModel
         }
         return $username;
     }
+	public function daily_test()
+    {
+        return $this->hasOne('Models\DailyTest', 'user_id', 'id')->with('symptoms');
+    }
     public function attachment()
     {
         return $this->hasOne('Models\Attachment', 'foreign_id', 'id')->where('class', 'UserAvatar');
@@ -167,6 +183,10 @@ class User extends AppModel
     public function role()
     {
         return $this->belongsTo('Models\Role', 'role_id', 'id');
+    }
+	public function country()
+    {
+        return $this->belongsTo('Models\Country', 'country_id', 'id');
     }
 	public function company()
     {
@@ -184,29 +204,17 @@ class User extends AppModel
     {
         return $this->morphTo(null, 'class', 'foreign_id');
     }
-	public function user_category()
+	public function island()
     {
-        return $this->hasOne('Models\UserCategory', 'user_id', 'id')->where('is_active', true)->with('category');
+        return $this->belongsTo('Models\Island', 'island_id', 'id');
     }
-	public function user_categories()
+	public function test_type()
     {
-        return $this->hasMany('Models\UserCategory', 'user_id', 'id')->where('is_active', true)->with('category');
+		return $this->belongsTo('Models\TestType', 'last_test_type', 'id');
     }
-	public function category()
+	public function test_types()
     {
-		return $this->hasOne('Models\UserCategory', 'user_id', 'id')->with('category')->where('is_active', true)->where('category_id', $_GET['category_id']);	
-    }
-	public function contest()
-    {
-		if (isset($_GET['contest_id']) && $_GET['contest_id'] != '') {
-			return $this->hasOne('Models\UserContest', 'user_id', 'id')->where('contest_id', $_GET['contest_id']);
-		} else {
-			return $this->hasOne('Models\UserContest', 'user_id', 'id');
-		}
-    }
-	public function vote_category()
-    {
-		return $this->hasOne('Models\UserCategory', 'user_id', 'id')->select('user_id','votes')->where('category_id', $_GET['category_id']);	
+		return $this->hasMany('Models\TestingCenterType', 'center_id', 'id')->with('detail');
     }
     public function scopeFilter($query, $params = array())
     {
@@ -221,28 +229,38 @@ class User extends AppModel
 		if (!empty($params['is_active'])) {
             $query->Where('is_active', $params['is_active']);
         }
+		if (!empty($params['company_id'])) {
+            $query->Where('company_id', $params['company_id']);
+        }
 		if (!empty($params['search'])) {
 			$search = $params['search'];
-			$query->where('username', 'like', "%$search%");
+			$query->orWhere('username', 'like', "%$search%");
+			$query->orWhere('first_name', 'like', "%$search%");
+			$query->orWhere('last_name', 'like', "%$search%");
         }
-		if (!empty($params['category_id'])) {
-            $category_id = explode(',', $params['category_id']);
-            $user_id = array();
-            $user_categories = UserCategory::select('user_id')->whereIn('category_id', $category_id)->get()->toArray();
-            foreach ($user_categories as $user_category) {
-                $user_id[] = $user_category['user_id'];
-            }
-            $query->whereIn('id', $user_id);
+		if (!empty($params['type'])) {
+			if ($params['type'] == 'Positive') {
+				$query->where('last_test_status', 1);
+			} else if ($params['type'] == 'Negative') {
+				$query->where('last_test_status', 0);
+			}
         }
-		if (!empty($params['contest_id'])) {
-            $constests = explode(',', $params['contest_id']);
-            $user_id = array();
-			$user_constests = UserContest::whereIn('contest_id', $constests)->get()->toArray();
-			foreach ($user_constests as $user_constest) {
-                $user_id[] = $user_constest['user_id'];
-            }
-            $query->whereIn('id', $user_id);
+		if (!empty($params['status'])) {
+			if ($params['status'] == 'Untested') {
+				$query->where('untested', 0);
+			} else if ($params['status'] == 'Quarantined') {
+				$query->where('quarantined', 1);
+			} else if ($params['status'] == 'Reinstated') {
+				$query->where('reinstated', 1);
+			} else if ($params['status'] == 'Symptom') {
+				$query->where('symptom', 1);
+			} else if ($params['status'] == 'Nonsymptom') {
+				$query->where('symptom', 0);
+			}
         }
+		if (!empty($params['history'])) {
+			$query->where('untested', '>=', 0);
+		}
         if (!empty($authUser) && !empty($authUser['role_id'])) {
             if ($authUser['role_id'] != \Constants\ConstUserTypes::Admin) {
                 $query->where('role_id', '!=', \Constants\ConstUserTypes::Admin);

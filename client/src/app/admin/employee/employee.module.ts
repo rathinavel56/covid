@@ -7,18 +7,20 @@ import { EmployeeComponent } from './employee.component';
 import { LanguageTranslationModule } from '../../shared/modules/language-translation/language-translation.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '../../api/services/user.service';
-import { AgePipe } from '../../utils/age';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { SharedCommonModule } from '../../shared-common/shared-common.module';
 @NgModule({
     declarations: [
-        EmployeeComponent,
-        AgePipe
+        EmployeeComponent
     ],
     imports: [
         CommonModule,
         EmployeeRoutingModule,
         LanguageTranslationModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NgbModule,
+        SharedCommonModule
     ],
     providers: [UserService]
 })

@@ -11,8 +11,25 @@ import { UserService } from '../../api/services/user.service';
     styleUrls: ['./test.component.scss']
 })
 export class TestComponent implements OnInit {
-    public activities: any;
-    public tested: any;
+    public booking: any;
+    public metaData: any;
+    public settings: any;
+    public page = 1;
+    public previousPage: any;
+    public statuss: any = [{
+        id: 0,
+        name: 'Inprogress'
+    },{
+        id: 1,
+        name: 'Negative'
+    },{
+        id: 2,
+        name: 'Positive'
+    },{
+        id: 3,
+        name: 'Vaccinated'
+    }];
+    qrcodeDetail: any = '';
     constructor(
         public router: Router,
         private formBuilder: FormBuilder,
@@ -21,28 +38,35 @@ export class TestComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.getActivity();
+        this.booked('');
     }
 
-    getActivity() {
+    changeUpdated(book, $event) {
         this.toastService.showLoading();
-        this.activities = [];
-        this.tested = [];
-        this.userService.getActivity()
+        this.userService.bookedDetail(book.id, $event)
         .subscribe((response) => {
-            this.activities = response;
+            this.toastService.success('Successfully Updated....');
             this.toastService.clearLoading();
         });
     }
-    
-    getTested() {
+
+    booked(qrcode: any) {
         this.toastService.showLoading();
-        this.activities = [];
-        this.tested = [];
-        this.userService.getTested()
+        this.booking = [];
+        this.qrcodeDetail = qrcode;
+        this.userService.booked({
+            qr_code: qrcode
+        })
         .subscribe((response) => {
-            this.tested = response;
+            this.booking = response.data;
+            this.metaData = response._metadata;
             this.toastService.clearLoading();
         });
+    }
+    loadPage(page: number) {
+        if (page !== this.previousPage) {
+            this.previousPage = page;
+            this.booked(this.qrcodeDetail);
+        }
     }
 }

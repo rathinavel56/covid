@@ -47,4 +47,8 @@ class Center extends AppModel
     {
         return $this->belongsTo('Models\Island', 'island_id', 'id');
     }
+	public function test_types()
+    {
+		return $this->hasMany('Models\TestingCenterType', 'center_id', 'id')->with('detail');
+    }
 }

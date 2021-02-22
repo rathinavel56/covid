@@ -41,11 +41,11 @@ export class AddComponent implements OnInit {
       this.windowData.top.addFunc = function (value) {
         if (!thiss.isFirstTime) {
           setTimeout(() => {
-            thiss.meunuItem(value);
+            thiss.menuItem(value);
             thiss.isFirstTime = true;
           }, 500);
         } else {
-          thiss.meunuItem(value);
+          thiss.menuItem(value);
         }
       };
       this.fromDate = calendar.getToday();
@@ -56,7 +56,7 @@ export class AddComponent implements OnInit {
     
   }
     
-  meunuItem(value: any) {
+  menuItem(value: any) {
     if (value) {
       this.menu = value;
       this.menu.add.fields.forEach((element, index) => {

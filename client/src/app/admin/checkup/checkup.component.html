@@ -2,17 +2,17 @@
     <div class="pt-40 clearfix custom-tab">
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-                <a href="#activity" class="nav-link active" aria-controls="activity" role="tab" data-toggle="tab">
+                <a href="#activity" class="nav-link active" (click)="getActivity()" aria-controls="activity" role="tab" data-toggle="tab">
                     Activity </a>
             </li>
 
             <li class="nav-item">
-                <a href="#symptoms" class="nav-link" aria-controls="symptoms" role="tab" data-toggle="tab"> Symptoms
+                <a href="#symptoms" class="nav-link" (click)="getUsers(null, 'Symptom')" aria-controls="symptoms" role="tab" data-toggle="tab"> Symptoms
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="#no_symptoms" class="nav-link" aria-controls="no_symptoms" role="tab" data-toggle="tab">
+                <a href="#no_symptoms" class="nav-link" (click)="getUsers(null, 'Nonsymptom')" aria-controls="no_symptoms" role="tab" data-toggle="tab">
                     No Symptoms
                 </a>
             </li>
@@ -115,466 +115,97 @@
 
             <div role="tabpanel" class="tab-pane" id="symptoms">
                 <div class="clearfix pt-40">
-                    <p class="text-21 db-c"> Personal (3) </p>
-
-                    <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive">
+                    <div class="table-responsive mb-30 clsReceipt-table">
                         <table class="table table-sm mb-20">
                             <thead>
                                 <tr>
                                     <th> # </th>
-                                    <th> Page Name </th>
-                                    <th> Internal Name </th>
-                                    <th> Contact Link </th>
-                                    <th> Created On </th>
-                                    <th> Receipts </th>
-                                    <th> User Name </th>
-                                    <th> </th>
+                                    <th> Employee Name </th>
+                                    <th> Email </th>
+                                    <th> Quarantine Date </th>
+                                    <th> Days </th>
+                                    <th> Status </th>
                                     <th> </th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                <tr>
-                                    <td> 1 </td>
-
+                                <tr class="cur-poin" *ngFor="let user of users; let indexUser = index">
+                                    <td>{{indexUser + 1}}</td>
                                     <td>
                                         <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
+                                            <app-attachment [attachment]="user.attachment" [cssClass]="'clsCircleImg'" [type]="original"></app-attachment>
+                                            <div class="media-body  pl-20 align-self-center">
+                                                <p> {{user.name}} </p>
                                             </div>
                                         </div>
                                     </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> anthony@mail.com </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> Anthony Gray </td>
-
+                                    <td>{{user.email}}</td>
+                                    <td>{{user.last_test_date}}</td>
+                                    <td>{{user.quarantined_days}}</td>
+                                    <td>{{(user.last_test_status || user.last_test_status == 0) ? ((user.last_test_status == 0) ? 'Negative' : 'Positive') : ''}}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
+                                        <button class="btn btn-sm btn-link width_in"><a href="javascript:void(0)" [routerLink]="['/admin/employeeprofile']" [queryParams]="{id:user.id}">View</a></button>
                                     </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-
                                 </tr>
-
-                                <tr>
-                                    <td> 2 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> anthony@mail.com </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> Anthony Gray </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-                                    <td> 3 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> anthony@mail.com </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> Anthony Gray </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-
-                                </tr>
+                                <tr *ngIf="users && users.length === 0">
+                                    <td colspan="7">No Records</td>
+                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
-
-                <div class="clearfix pt-60">
-                    <p class="text-21 db-c"> Business (2) </p>
-
-                    <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive mb-20">
-                        <table class="table table-sm mb-20">
-                            <thead>
-                                <tr>
-                                    <th> # </th>
-                                    <th> Page Name </th>
-                                    <th> Internal Name </th>
-                                    <th> Contact Link </th>
-                                    <th> Created On </th>
-                                    <th> Receipts </th>
-                                    <th> Members </th>
-                                    <th> </th>
-                                    <th> </th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td> 1 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> anthony@mail.com </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> 20 </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-                                    <td> 2 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> anthony@mail.com </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> 15 </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="clearfix pagination justify-content-center" *ngIf="metaData">
+                        <ngb-pagination [collectionSize]="metaData.total" [pageSize]="metaData.per_page"
+                            [(page)]="metaData.current_page" [maxSize]="7" [rotate]="true" [ellipses]="false" [boundaryLinks]="true"
+                            (pageChange)="loadPage($event)"></ngb-pagination>
                     </div>
                 </div>
             </div>
 
             <div role="tabpanel" class="tab-pane" id="no_symptoms">
                 <div class="clearfix pt-40">
-                    <p class="text-21 db-c"> Personal (3) </p>
-
-                    <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive">
+                    <div class="table-responsive mb-30 clsReceipt-table">
                         <table class="table table-sm mb-20">
                             <thead>
                                 <tr>
                                     <th> # </th>
-                                    <th> Application Name </th>
-                                    <th> Internal Name </th>
-                                    <th> App Domain </th>
-                                    <th> Created On </th>
-                                    <th> Scenarios </th>
-                                    <th> Receipts </th>
-                                    <th> User Name </th>
-                                    <th> </th>
+                                    <th> Employee Name </th>
+                                    <th> Email </th>
+                                    <th> Quarantine Date </th>
+                                    <th> Days </th>
+                                    <th> Status </th>
                                     <th> </th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                <tr>
-                                    <td> 1 </td>
-
+                                <tr class="cur-poin" *ngFor="let user of users; let indexUser = index">
+                                    <td>{{indexUser + 1}}</td>
                                     <td>
                                         <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
+                                            <app-attachment [attachment]="user.attachment" [cssClass]="'clsCircleImg'" [type]="original"></app-attachment>
+                                            <div class="media-body  pl-20 align-self-center">
+                                                <p> {{user.name}} </p>
                                             </div>
                                         </div>
                                     </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> www.appxyz.come </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> 20 </td>
-
-                                    <td> Anthony Gray </td>
-
+                                    <td>{{user.email}}</td>
+                                    <td>{{user.last_test_date}}</td>
+                                    <td>{{user.quarantined_days}}</td>
+                                    <td>{{(user.last_test_status || user.last_test_status == 0) ? ((user.last_test_status == 0) ? 'Negative' : 'Positive') : ''}}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
+                                        <button class="btn btn-sm btn-link width_in"><a href="javascript:void(0)" [routerLink]="['/admin/employeeprofile']" [queryParams]="{id:user.id}">View</a></button>
                                     </td>
                                 </tr>
-
-                                <tr>
-                                    <td> 2 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> www.appxyz.come </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> 20 </td>
-
-                                    <td> Anthony Gray </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td> 3 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> www.appxyz.come </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> 20 </td>
-
-                                    <td> Anthony Gray </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-                                </tr>
+                                <tr *ngIf="users && users.length === 0">
+                                    <td colspan="7">No Records</td>
+                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
-
-                <div class="clearfix pt-60">
-                    <p class="text-21 db-c"> Business (3) </p>
-
-                    <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive mb-20">
-                        <table class="table table-sm mb-20">
-                            <thead>
-                                <tr>
-                                    <th> # </th>
-                                    <th> Application Name </th>
-                                    <th> Internal Name </th>
-                                    <th> App Domain </th>
-                                    <th> Created On </th>
-                                    <th> Scenarios </th>
-                                    <th> Receipts </th>
-                                    <th> Product </th>
-                                    <th> Members </th>
-                                    <th> </th>
-                                    <th> </th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr>
-                                    <td> 1 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> www.appxyz.come </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> 26 </td>
-
-                                    <td> 20 </td>
-
-                                    <td> APP </td>
-
-                                    <td> 10 </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td> 2 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> www.appxyz.come </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> - </td>
-
-                                    <td> - </td>
-
-                                    <td> Doc Scan </td>
-
-                                    <td> 05 </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td> 3 </td>
-
-                                    <td>
-                                        <div class="media">
-                                            <img class="clsCircleImg" src="assets/images/marketing_icon.svg" alt="...">
-                                            <div class="media-body align-self-center pl-20">
-                                                <p> Ronald Porter </p>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td> Marketing And Promotions </td>
-
-                                    <td> www.appxyz.come </td>
-
-                                    <td> 07 December 2019 , 00:49 </td>
-
-                                    <td> - </td>
-
-                                    <td> - </td>
-
-                                    <td> Age Scan </td>
-
-                                    <td> 20 </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-success width_in"> Deactive </button>
-                                    </td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-link width_in"> View </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+            
+                    <div class="clearfix pagination justify-content-center" *ngIf="metaData">
+                        <ngb-pagination [collectionSize]="metaData.total" [pageSize]="metaData.per_page"
+                            [(page)]="metaData.current_page" [maxSize]="7" [rotate]="true" [ellipses]="false" [boundaryLinks]="true"
+                            (pageChange)="loadPage($event)"></ngb-pagination>
                     </div>
                 </div>
             </div>

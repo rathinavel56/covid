@@ -792,24 +792,31 @@ function findCountryIdFromIso2($iso2)
  *
 */
 function saveImage($class_name, $file, $foreign_id, $is_multi = false, $user_id = null, $ispaid = 0, $args = array()) {
-    if ($class_name == 'UserAvatar' && (!empty($file)) && (file_exists(APP_PATH . '/media/tmp/' . $file))) {
+    if (($class_name == 'UserAvatar' || $args['isDeleteId'] > 0) && (!empty($file)) && (file_exists(APP_PATH . '/media/tmp/' . $file))) {
         //Removing and re-inserting new image
-        $userImg = Models\Attachment::where('foreign_id', $foreign_id)->where('class', $class_name)->first();
+		$attId = $foreign_id;
+		if ($args['isDeleteId'] > 0) {
+			$attId = $args['isDeleteId'];
+		}
+		$userImg = Models\Attachment::where('foreign_id', $attId)->where('class', $class_name)->first();
         if (!empty($userImg) && !($is_multi)) {
-            if (file_exists(APP_PATH . '/media/' . $class_name . '/' . $foreign_id . '/' . $userImg['filename'])) {
-                unlink(APP_PATH . '/media/' . $class_name . '/' . $foreign_id . '/' . $userImg['filename']);
+            if (file_exists(APP_PATH . '/media/' . $class_name . '/' . $attId . '/' . $userImg['filename'])) {
+                unlink(APP_PATH . '/media/' . $class_name . '/' . $attId . '/' . $userImg['filename']);
                 $userImg->delete();
             }
             // Removing Thumb folder images
             $mediadir = APP_PATH . '/client/images/';
 			$thumbs = array('big_thumb', 'large_thumb', 'micro_thumb', 'small_thumb', 'medium_thumb', 'normal_thumb', 'original');
             foreach ($thumbs as $value) {
-				$list = glob($mediadir . $value . '/' . $class_name . '/' . $foreign_id . '.*');
+				$list = glob($mediadir . $value . '/' . $class_name . '/' . $attId . '.*');
                 if ($list) {
                     @unlink($list[0]);
                 }
             }
         }
+	}
+	if ($args['clean'] == true) {
+		return;
 	}
 	
 	$attachment = new Models\Attachment;
@@ -852,6 +859,14 @@ function saveImage($class_name, $file, $foreign_id, $is_multi = false, $user_id 
 		}
 	}
 	return $attachment->id;
+}
+function checkEmail($email) {
+   $find1 = strpos($email, '@');
+   $find2 = strpos($email, '.');
+   return ($find1 !== false && $find2 !== false && $find2 > $find1);
+}
+function checkMobile($mobile) {
+   return (is_numeric($mobile) || preg_match('/^\d{10}$/',$mobile));
 }
 function human_filesize($bytes, $decimals = 2)
 {
@@ -1284,7 +1299,7 @@ function insertActivities($user_id, $other_user_id, $class, $foreign_id, $from_s
         $user->save();
     }
 }
-function insertTransaction($user_id, $to_user_id, $class, $transaction_type, $payment_gateway_id, $amount, $site_revenue_from_freelancer, $gateway_fees, $coupon_id = 0, $site_revenue_from_employer = 0, $foreign_id = null, $isSanbox = false, $parent_user_id = 0, $transactionStatus = '', $transactionId = '', $senderTransactionId = '')
+function insertTransaction($user_id, $to_user_id, $class, $transaction_type, $payment_gateway_id, $amount, $site_revenue_from_freelancer, $gateway_fees, $coupon_id = 0, $site_revenue_from_employer = 0, $foreign_id = null, $isSanbox = false, $parent_user_id = 0, $transactionStatus = '', $transactionId = '', $senderTransactionId = '', $card_id = 0)
 {
     $transaction = new Models\Transaction;
     $transaction->user_id = $user_id;
@@ -1302,6 +1317,7 @@ function insertTransaction($user_id, $to_user_id, $class, $transaction_type, $pa
 	$transaction->transactionStatus = $transactionStatus;
 	$transaction->transactionId = $transactionId;
 	$transaction->senderTransactionId = $senderTransactionId;
+	$transaction->card_id = $card_id;
     $transaction->save();
     return $transaction->id;
 }
@@ -1848,27 +1864,6 @@ function addAdminUser($args, $role_id, $company_id) {
 		if (isset($cover_photo) && $cover_photo != '') {
 			saveImage('CoverPhoto', $cover_photo, $user->id);
 		}
-		if (isset($addressDetail) && $addressDetail != '') {				
-			$address = new Models\UserAddress;
-			$address->addressline1 = $addressDetail['addressline1'];
-			$address->addressline2 = $addressDetail['addressline2'];
-			$address->city = $addressDetail['city'];
-			$address->state = $addressDetail['state'];
-			$address->country = $addressDetail['country'];
-			$address->zipcode = $addressDetail['zipcode'];
-			$address->user_id = $user->id;
-			$address->is_default = true;
-			$address->name = 'Default';
-			$address->save();
-		}
-		if (!empty($categories) && $role_id === \Constants\ConstUserTypes::Employer) {
-			foreach ($categories as $category) {
-				$userCategory = new Models\UserCategory;
-				$userCategory->user_id = $user->id;
-				$userCategory->category_id = $category['id'];
-				$userCategory->save();
-			}
-		}
 		return array('message' => 'User created successfully', 'code' => 0);
 	} else {
 		if (!empty($validationErrorFields)) {
@@ -1922,4 +1917,44 @@ function offlineToCart($userId) {
 		}
 		Models\OfflineCart::where('ipaddress', getClientRequestIP())->delete();
 	}
+}
+function curl_post($url, $header, $post_string) {
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$result = curl_exec($ch);
+	echo '<pre>';print_r($result);exit;
+	return $errors;
+}
+function send_twilio_text_sms($to, $body) {
+	$id = "AC72e1602e50a75bd6fc60b4a3a8cbde4c";
+	$token = "329f6a160916bd9344644888663e8b65";
+	$url = "https://api.twilio.com/2010-04-01/Accounts/$id/SMS/Messages";
+	$from = "+15615562273";
+	$data = array (
+		'From' => $from,
+		'To' => $to,
+		'Body' => $body,
+	);
+	$post = http_build_query($data);
+	$x = curl_init($url );
+	curl_setopt($x, CURLOPT_POST, true);
+	curl_setopt($x, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($x, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($x, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	curl_setopt($x, CURLOPT_USERPWD, "$id:$token");
+	curl_setopt($x, CURLOPT_POSTFIELDS, $post);
+	$y = curl_exec($x);
+	curl_close($x);
+	return xmlToJson($y);
+}
+function xmlToJson($xml_string) {
+	$xml = simplexml_load_string($xml_string);
+	$json = json_encode($xml);
+	return json_decode($json,TRUE);
 }

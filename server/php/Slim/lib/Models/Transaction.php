@@ -60,6 +60,10 @@ class Transaction extends AppModel
     {
         return $this->belongsTo('Models\ZazpayPaymentGateway', 'zazpay_gateway_id', 'id');
     }
+	public function card()
+    {
+        return $this->belongsTo('Models\Card', 'card_id', 'id');
+    }
     public function scopeFilter($query, $params = array())
     {
         parent::scopeFilter($query, $params);

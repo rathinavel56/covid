@@ -7,6 +7,7 @@ import { EmployeeProfileComponent } from './employeeprofile.component';
 import { LanguageTranslationModule } from '../../shared/modules/language-translation/language-translation.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '../../api/services/user.service';
+import { SharedCommonModule } from '../../shared-common/shared-common.module';
 @NgModule({
     declarations: [EmployeeProfileComponent],
     imports: [
@@ -14,7 +15,8 @@ import { UserService } from '../../api/services/user.service';
         EmployeeProfileRoutingModule,
         LanguageTranslationModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        SharedCommonModule
     ],
     providers: [UserService]
 })

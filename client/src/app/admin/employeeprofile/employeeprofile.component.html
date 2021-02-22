@@ -1,23 +1,22 @@
-<div class="container-fluid">
+<div class="container-fluid" *ngIf="user">
     <div class="clearfix pt-40 mb-50">
         <div class="row">
             <div class="col-sm-6">
                 <div class="clsProfileTab pr-50">
                     <p class="text-21 sep-bot text-m db-c pb-5"> Employee </p>
-
                     <div class="media pt-15">
-                        <div class="media-left pr-30">
-                            <img class="media-object" src="assets/images/user_icon.png" alt="user icon">
+                        <div class="media-left pr-30" *ngIf="user.attachment">
+                            <app-attachment [attachment]="user.attachment" [cssClass]="'media-object'" [type]="original"></app-attachment>
                         </div>
                         <div class="media-body media-middle">
                             <div class="row pb-20">
                                 <div class="col-sm-6">
                                     <p class=""> Full Name </p>
-                                    <p class="text-sb db-c"> Jose Andrews </p>
+                                    <p class="text-sb db-c">{{(user.first_name || user.last_name) ? (user.first_name + ' '+user.last_name) : 'N/A'}}</p>
                                 </div>
                                 <div class="col-sm-6">
                                     <p class=""> Work email Address </p>
-                                    <p class="text-sb db-c"> jose@gmail.com </p>
+                                    <p class="text-sb db-c">{{user.email ? user.email : 'N/A'}}</p>
                                 </div>
                             </div>
                         </div>
@@ -29,106 +28,70 @@
                         <div class="row pb-20 pt-30">
                             <div class="col-sm-6">
                                 <p class="pb-10"> Registered Address </p>
-                                <address>
-                                    Business tower <br>
-                                    440 laurier Ave, Ottawa, ON K1R 7X6 <br>
-                                    Nassau <br>
-                                    181747 <br>
-                                    Bahamas
+                                <address *ngIf="user.address || user.address.addressline1 || user.address.addressline2 || user.address.city || user.address.country">
+                                    <span *ngIf="user.address.addressline1">{{user.address.addressline1}} <br></span>
+                                    <span *ngIf="user.address.addressline2">{{user.address.addressline2}}<br></span>
+                                    <span *ngIf="user.address.city">{{user.address.city}}<br></span>
+                                    <span *ngIf="user.address.country">{{user.address.country}}</span>
                                 </address>
+                                <address *ngIf="!user.address.addressline1 && !user.address.addressline2 && !user.address.city && !user.address.country">N/A</address>
                             </div>
-                            <!-- <div class="col-sm-6">
-                                <p class="pb-10"> Trading Address </p>
-                                <address>
-                                    Business tower <br>
-                                    440 laurier Ave, Ottawa, ON K1R 7X6 <br>
-                                    Nassau <br>
-                                    181747 <br>
-                                    Bahamas
-                                </address>
-                            </div> -->
                         </div>
                     </div>
-
-                    <!-- <div class="clearfix">
-                        <p class="text-21 sep-bot text-m db-c pb-5"> Documents </p>
-    
-                        <div class="clearfix pt-30">
-                            <div class="inline-show v-top mr-10">
-                                <a href="#" data-toggle="modal" data-target="#passport" class="">
-                                    <img src="assets/images/passport_front.png" alt="Passport">
-                                    <p class="pt-10 text-m pb-c"> Passport </p>
-                                </a>
-                            </div>
-    
-                            <div class="inline-show v-top mr-10">
-                                <img src="assets/images/passport_front.png" alt="Citizen Card">
-                                <p class="pt-10 text-m pb-c"> Citizen Card </p>
-                            </div>
-    
-                            <div class="inline-show v-top mr-10">
-                                <img src="assets/images/passport_front.png" alt="Driving Licens">
-                                <p class="pt-10 text-m pb-c"> Driving Licens </p>
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
             </div>
-
             <div class="col-sm-6">
                 <div class="clsProfileTab pl-50">
                     <p class="text-21 sep-bot text-m db-c pb-5"> Health Report </p>
-
                     <div class="row pb-20 pt-40">
                         <div class="col-sm-6">
                             <p class=""> Type of Test </p>
-                            <p class="text-sb db-c"> Rt-Pcr </p>
+                            <p class="text-sb db-c">{{user.test_type ? user.test_type.name : 'N/A'}}</p>
                         </div>
                         <div class="col-sm-6">
                             <p class=""> Completed Test </p>
-                            <p class="text-sb db-c"> 2 </p>
+                            <p class="text-sb db-c">{{user.checkups ? user.checkups : 'N/A'}}</p>
                         </div>
                     </div>
 
                     <div class="row pb-20">
                         <div class="col-sm-6">
                             <p class=""> Status </p>
-                            <p class="text-sb db-c"> Negative </p>
+                            <p class="text-sb db-c"> {{(user.last_test_status || user.last_test_status == 0) ? ((user.last_test_status == 0) ? 'Negative' : 'Positive') : ''}} </p>
                         </div>
                         <div class="col-sm-6">
                             <p class=""> Last Dated </p>
                             <p class="text-sb db-c">
-                                <span class="show"> Date: 12-12-20 </span>
+                                <span class="show"> Date: {{user.last_test_date}} </span>
                                 <span class="show"> Time: 12:45AM </span>
                             </p>
                         </div>
                     </div>
-
-                    <div class="clearfix pt-40">
+                    <div class="clearfix pt-40" *ngIf="user.daily_test">
                         <p class="text-21 sep-bot text-m db-c pb-5"> Daily Check Up </p>
 
                         <div class="row pb-20 pt-40">
                             <div class="col-sm-6">
                                 <p class=""> Status </p>
-                                <p class="text-sb db-c"> No Symptoms </p>
+                                <p class="text-sb db-c"> {{user.daily_test ? 'Yes Symptoms' : 'No Symptoms'}} </p>
                             </div>
                             <div class="col-sm-6">
                                 <p class=""> Last Check Up </p>
                                 <p class="text-sb db-c">
-                                    <span class="show"> Date: 12-12-20 </span>
-                                    <span class="show"> Time: 12:45AM </span>
+                                    <span class="show"> Date: {{user.daily_test.fill_date}}</span>
+                                    <span class="show"> Time: {{created_at}}</span>
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="clearfix pt-40">
+                    <div class="clearfix pt-40" *ngIf="user.daily_test">
                         <p class="text-21 sep-bot text-m db-c pb-5"> Anwsers </p>
 
                         <div class="row pb-20 pt-40">
                             <div class="col-sm-12">
                                 <p class="text-sb db-c"> 1. Experiencing any symptoms? </p>
-                                <p class=""> A: None of the above </p>
+                                <p class=""> {{this.syst.length > 0 ? this.syst.toString() : ''}} </p>
                             </div>
 
                             <div class="col-sm-12 pt-10">

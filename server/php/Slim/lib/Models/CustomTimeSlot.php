@@ -24,9 +24,7 @@ class CustomTimeSlot extends AppModel
 		'updated_at',
 		'center_id',
 		'date_detail',
-		'type',
-		'from_timeslot',
-		'to_timeslot'
+		'type'
     );
     public $rules = array(
         'id' => 'sometimes|required',
@@ -34,8 +32,10 @@ class CustomTimeSlot extends AppModel
 		'created_at' => 'sometimes|required',
 		'updated_at' => 'sometimes|required',
 		'date_detail' => 'sometimes|required',
-		'type' => 'sometimes|required',
-		'from_timeslot' => 'sometimes|required',
-		'to_timeslot' => 'sometimes|required'
+		'type' => 'sometimes|required'
     );
+	public function slots()
+    {
+		return $this->hasMany('Models\Slot', 'time_slot_id', 'id')->where('type', 1);
+    }
 }

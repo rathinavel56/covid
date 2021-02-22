@@ -143,13 +143,13 @@ export class LoginComponent extends BaseComponent implements OnInit {
                 this.router.navigate([url]);
             } else if (this.user.role.id === AppConst.ROLE.ADMIN) {
                 this.setLoginDetails();
-                this.router.navigate(['/admin/actions/company']);    
+                this.router.navigate(['admin/dashboard']);    
             } else if (this.user.role.id === AppConst.ROLE.EMPLOYER) {
                 this.setLoginDetails();
-                this.router.navigate(['admin/actions/users']);
+                this.router.navigate(['admin/dashboard']);
             } else if (this.user.role.id === AppConst.ROLE.COMPANY) {
                 this.setLoginDetails();
-                this.router.navigate(['admin/actions/users']);
+                this.router.navigate(['admin/dashboard']);
             } else {
                 this.router.navigate(['/']);
             }

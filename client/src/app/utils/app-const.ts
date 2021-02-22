@@ -39,6 +39,9 @@ export class AppConst {
         SIZES: '/sizes',
         TIMESLOTS: '/time_slots',
         CUSTOM_TIMESLOTS: '/custom_time_slots',
+        BOOKING: '/booking',
+        BOOKED: '/admin/appointments',
+        DASHBOARD: '/dashboard',
         LOGOUT: '/users/logout'
     };
 

@@ -20,12 +20,11 @@ class TimeSlot extends AppModel
     );
     protected $fillable = array(
         'id',
-		'center_id',
 		'created_at',
 		'updated_at',
+		'center_id',
 		'day',
-		'from_timeslot',
-		'to_timeslot'
+		'type'
     );
     public $rules = array(
         'id' => 'sometimes|required',
@@ -33,7 +32,10 @@ class TimeSlot extends AppModel
 		'created_at' => 'sometimes|required',
 		'updated_at' => 'sometimes|required',
 		'day' => 'sometimes|required',
-		'from_timeslot' => 'sometimes|required',
-		'to_timeslot' => 'sometimes|required'
+		'type' => 'sometimes|required'
     );
+	public function slots()
+    {
+		return $this->hasMany('Models\Slot', 'time_slot_id', 'id')->where('type', 0);
+    }
 }

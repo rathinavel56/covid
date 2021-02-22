@@ -65,7 +65,7 @@ $app->GET('/api/v1/oauth/refresh_token', function ($request, $response, $args) {
  * Output-Formats: [application/json]
  */
 $app->POST('/api/v1/users/register', function ($request, $response, $args) {
-    global $_server_domain_url;
+	global $_server_domain_url;
     $args = $request->getParsedBody();
     $result = array();
     $user = new Models\User;
@@ -73,14 +73,12 @@ $app->POST('/api/v1/users/register', function ($request, $response, $args) {
     if (!empty($validationErrorFields)) {
         $validationErrorFields = $validationErrorFields->toArray();
     }
-    if (checkAlreadyUsernameExists($args['username']) && empty($validationErrorFields)) {
-        $validationErrorFields['unique'] = array();
-        array_push($validationErrorFields['unique'], 'username');
-    }
-    if (checkAlreadyEmailExists($args['email']) && empty($validationErrorFields)) {
-        $validationErrorFields['unique'] = array();
-        array_push($validationErrorFields['unique'], 'email');
-    }
+	if (empty($args['code'])) {
+		return renderWithJson(array(), 'Verification is code required', '', 1);
+	}
+	$args['username'] = $args['mobile'];
+	$mobileCode = $args['code'];
+	unset($args['code']);
     if (empty($validationErrorFields['unique'])) {
         unset($validationErrorFields['unique']);
     }
@@ -89,14 +87,16 @@ $app->POST('/api/v1/users/register', function ($request, $response, $args) {
     }
     if (empty($validationErrorFields)) {
         foreach ($args as $key => $arg) {
-            if ($key == 'password') {
-                $user->{$key} = getCryptHash($arg);
-            } else {
-                $user->{$key} = $arg;
-            }
+			if ($key == 'password') {
+				$user->{$key} = getCryptHash($arg);
+			} else {
+				$user->{$key} = $arg;
+			}
         }
         try {
-            $user->is_email_confirmed = (USER_IS_EMAIL_VERIFICATION_FOR_REGISTER == 1) ? 0 : 1;
+			$registerTemp = Models\RegisterTemp::where('code', $mobileCode)->first();			
+            $user->mobile = $registerTemp->mobile;
+			$user->is_email_confirmed = (USER_IS_EMAIL_VERIFICATION_FOR_REGISTER == 1) ? 0 : 1;
             $user->is_active = (USER_IS_ADMIN_ACTIVATE_AFTER_REGISTER == 1) ? 0 : 1;
             if (USER_IS_AUTO_LOGIN_AFTER_REGISTER == 1) {
                 $user->is_email_confirmed = 1;
@@ -112,29 +112,28 @@ $app->POST('/api/v1/users/register', function ($request, $response, $args) {
                 saveImage('CoverPhoto', $args['cover_photo'], $user->id);
             }
             // send to admin mail if USER_IS_ADMIN_MAIL_AFTER_REGISTER is true
-            if (USER_IS_ADMIN_MAIL_AFTER_REGISTER == 1) {
-                $emailFindReplace = array(
-                    '##USERNAME##' => $user->username,
-                    '##USEREMAIL##' => $user->email,
-                    '##SUPPORT_EMAIL##' => SUPPORT_EMAIL
-                );
-                sendMail('newuserjoin', $emailFindReplace, SITE_CONTACT_EMAIL);
-            }
-            if (USER_IS_WELCOME_MAIL_AFTER_REGISTER == 1) {
-                $emailFindReplace = array(
-                    '##USERNAME##' => $user->username,
-                    '##SUPPORT_EMAIL##' => SUPPORT_EMAIL
-                );
-                // send welcome mail to user if USER_IS_WELCOME_MAIL_AFTER_REGISTER is true
-                sendMail('welcomemail', $emailFindReplace, $user->email);
-            }
-            if (USER_IS_EMAIL_VERIFICATION_FOR_REGISTER == 1) {
-                $emailFindReplace = array(
-                    '##USERNAME##' => $user->username,
-                    '##ACTIVATION_URL##' => $_server_domain_url . '/activation/' . $user->id . '/' . md5($user->username)
-                );
-                sendMail('activationrequest', $emailFindReplace, $user->email);
-            }
+            // if (USER_IS_ADMIN_MAIL_AFTER_REGISTER == 1) {
+                // $emailFindReplace = array(
+                    // '##USERNAME##' => $user->username,
+                    // '##USEREMAIL##' => $user->email,
+                    // '##SUPPORT_EMAIL##' => SUPPORT_EMAIL
+                // );
+                // sendMail('newuserjoin', $emailFindReplace, SITE_CONTACT_EMAIL);
+            // }
+            // if (USER_IS_WELCOME_MAIL_AFTER_REGISTER == 1) {
+                // $emailFindReplace = array(
+                    // '##USERNAME##' => $user->username,
+                    // '##SUPPORT_EMAIL##' => SUPPORT_EMAIL
+                // );
+                // sendMail('welcomemail', $emailFindReplace, $user->email);
+            // }
+            // if (USER_IS_EMAIL_VERIFICATION_FOR_REGISTER == 1) {
+                // $emailFindReplace = array(
+                    // '##USERNAME##' => $user->username,
+                    // '##ACTIVATION_URL##' => $_server_domain_url . '/activation/' . $user->id . '/' . md5($user->username)
+                // );
+                // sendMail('activationrequest', $emailFindReplace, $user->email);
+            // }
             if (USER_IS_AUTO_LOGIN_AFTER_REGISTER == 1) {
                 $scopes = '';
 				if($user->role_id == \Constants\ConstUserTypes::Admin) {
@@ -173,7 +172,7 @@ $app->POST('/api/v1/users/register', function ($request, $response, $args) {
             }
             return renderWithJson($result, 'Success','', 0);
         } catch (Exception $e) {
-			return renderWithJson($result, 'User could not be added. Please, try again.', '', 1);
+			return renderWithJson($result, 'User could not be added. Please, try again.', $e->getMessage(), 1);
         }
     } else {
 		if (!empty($validationErrorFields)) {
@@ -252,7 +251,7 @@ $app->POST('/api/v1/users/login', function ($request, $response, $args) {
 		'attachment',
 		'role',
 		'address'
-	);		
+	);
 	if (USER_USING_TO_LOGIN == 'username') {
 		if (isset($body['role_id']) && $body['role_id'] != '') {
 			$log_user = $user->where('username', $body['username'])->with($enabledIncludes)->where('is_active', 1)->where('is_email_confirmed', 1)->where('role_id', $body['role_id'])->first();
@@ -260,7 +259,14 @@ $app->POST('/api/v1/users/login', function ($request, $response, $args) {
 			$log_user = $user->where('username', $body['username'])->with($enabledIncludes)->where('is_active', 1)->where('is_email_confirmed', 1)->first();
 		}
 	} else {
-		$log_user = $user->where('email', $body['email'])->with($enabledIncludes)->where('is_active', 1)->where('is_email_confirmed', 1)->where('role_id', $body['role_id'])->first();
+		if (checkEmail($body['email'])) {
+			$log_user = $user->where('email', $body['email'])->with($enabledIncludes)->where('is_active', 1)->where('is_email_confirmed', 1)->first();
+		} else if (checkMobile($body['mobile'])) {
+			$mobile = $body['mobile'];
+			$log_user = $user->where('mobile', 'like', "%$mobile%")->with($enabledIncludes)->where('is_active', 1)->where('is_email_confirmed', 1)->first();
+		} else {
+			$log_user = $user->where('username', $body['username'])->with($enabledIncludes)->where('is_active', 1)->where('is_email_confirmed', 1)->first();
+		}
 	}
 	$password = crypt($body['password'], $log_user['password']);
 	$validationErrorFields = $user->validate($body);
@@ -286,16 +292,22 @@ $app->POST('/api/v1/users/login', function ($request, $response, $args) {
 		);
 		$response = getToken($post_val);
 		if (!empty($response['refresh_token'])) {
-			$log_user->makeVisible(['subscription_end_date']);
-			$log_user->is_subscribed = ($log_user->subscription_end_date && strtotime($log_user->subscription_end_date) >= strtotime(date('Y-m-d'))) ? true : false;			
 			$result = $response + $log_user->toArray();
 			$userLogin = new Models\UserLogin;
 			$userLogin->user_id = $log_user->id;
 			$userLogin->ip_id = saveIp();
 			$userLogin->user_agent = $_SERVER['HTTP_USER_AGENT'];
 			$userLogin->save();
-			offlineToCart($log_user->id);
-			$result['cart_count'] = Models\Cart::where('is_purchase', false)->where('user_id', $userLogin->user_id)->count();
+			Models\User::where('username', $body['username'])->update(array(
+				'device_token' => $body['device_details']['deviceToken'],
+				'device_id' => $body['device_details']['deviceId'],
+				'latitude' => $body['device_details']['latitude'],
+				'longitude' => $body['device_details']['longitude'],
+				'model' => $body['device_details']['model'],
+				'os' => $body['device_details']['os'],
+				'platform' => $body['device_details']['platform'],
+				'version' => $body['device_details']['version'] 
+			));
 			return renderWithJson($result, 'LoggedIn Successfully');
 		} else {
 			return renderWithJson($result, 'Your login credentials are invalid.', '', 1);
@@ -350,7 +362,7 @@ $app->POST('/api/v1/users/social_login', function ($request, $response, $args) {
 $app->POST('/api/v1/users/forgot_password', function ($request, $response, $args) {
     $result = array();
     $args = $request->getParsedBody();
-    $user = Models\User::where('email', $args['email'])->first();
+    $user = Models\User::where('mobile', $args['mobile'])->first();
     if (!empty($user)) {
         $validationErrorFields = $user->validate($args);
         if (empty($validationErrorFields) && !empty($user)) {
@@ -362,10 +374,11 @@ $app->POST('/api/v1/users/forgot_password', function ($request, $response, $args
                     '##USERNAME##' => $user['username'],
                     '##PASSWORD##' => $password,
                 );
-                sendMail('forgotpassword', $emailFindReplace, $user['email']);
-                return renderWithJson($result, 'An email has been sent with your new password', '', 0);
+                // sendMail('forgotpassword', $emailFindReplace, $user['email']);
+				send_twilio_text_sms($args['mobile'], "BID please find your new username : ".$user['username']." password : ".$password );
+                return renderWithJson($result, 'An message has been sent with your new password', '', 0);
             } catch (Exception $e) {
-                return renderWithJson($result, 'Email Not found', '', 1);
+                return renderWithJson($result, 'Mobile Not found', '', 1);
             }
         } else {
             return renderWithJson($result, 'Process could not be found', $validationErrorFields, 1);
@@ -822,6 +835,20 @@ $app->GET('/api/v1/companies', function ($request, $response, $args) {
         return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
     }
 })->add(new ACL('canAdmin'));
+$app->GET('/api/v1/dashboard', function ($request, $response, $args) {
+	
+	$result = array(
+			'checkups' => Models\User::selectRaw('sum(checkups) as checkups')->first()->toArray(),
+			'emptested' => Models\User::where('checkups', '>' , 0)->count(),
+            'symptoms' => Models\User::where('symptom', 0)->count(),
+			'non_symptoms' => Models\User::where('symptom', 1)->count(),
+			'negative' => Models\User::where('last_test_status', 1)->count(),
+			'positive' => Models\User::where('last_test_status', 2)->count(),
+			'unstested' => Models\User::where('untested', 0)->count(),
+			'quarantined' => Models\User::where('quarantined', 1)->count()
+        );
+        return renderWithJson($result, 'Success','', 0);
+});
 /**
  * GET UseruserIdGet
  * Summary: Get particular user details
@@ -834,26 +861,20 @@ $app->GET('/api/v1/users/{userId}', function ($request, $response, $args) {
 		$queryParams = $request->getQueryParams();
 		$result = array();
 		$enabledIncludes = array(
-					'category',
 					'attachments'
 				);
 		$enabledUserIncludes = array(
 			'attachment',
 			'address',
-			'vote_category'
+			'test_type',
+			'daily_test'
 		);
 		$user = Models\User::with($enabledUserIncludes)->where('id', $request->getAttribute('userId'))->orWhere('username', $request->getAttribute('userId'))->first();
 		$_GET['user_id'] = $user->id;
 		$authUserId = null;
-		$usercategories = Models\UserCategory::select('id', 'category_id')->where('is_active', true)->where('user_id', $user->id)->get()->toArray();
-		$catIds = array_column($usercategories, 'category_id');
-		$categories = Models\Category::where('is_active', true)->whereIn('id', $catIds)->orderBy('name', 'asc')->get()->toArray();
-		
 		if (!empty($authUser['id'])) {
 			$authUserId = $authUser['id'];
 			$current_user = '';
-			$subscription_end_date = '';
-			$subscription_end_date  = $user->subscription_end_date;
 			if ($user->id != $authUserId) {
 				$current_user = Models\User::with($enabledUserIncludes)->where('id', $authUserId)->first();
 				$user_model = new Models\User;
@@ -877,116 +898,11 @@ $app->GET('/api/v1/users/{userId}', function ($request, $response, $args) {
 					$user->address->zipcode = '';
 					$user->address->is_default = 1;
 				}
-			}
-			$categories = array();
-			if ($authUserId == $user->id && $authUser['role_id'] == \Constants\ConstUserTypes::Employer) {
-				$user->is_subscribed = true;
-				$usercategories = Models\UserCategory::select('id', 'category_id')->where('is_active', true)->where('user_id', $user->id)->get()->toArray();
-				$catIds = array_column($usercategories, 'category_id');
-				$categories = Models\Category::where('is_active', true)->whereIn('id', $catIds)->orderBy('name', 'asc')->get()->toArray();
-				if (!empty($usercategories)) {
-					$category_ids = array_column($usercategories, 'id');
-					$categoryIdArr = Models\Attachment::select('id', 'foreign_id')->whereIn('foreign_id', $category_ids)->where('user_id', $user->id)->where('class', 'UserProfile')->where('is_admin_approval', '<>' , 3)->get()->toArray();
-				}
-				if (!empty($categoryIdArr)) {
-					$category_ids = array_column($categoryIdArr, 'foreign_id');
-					$user->subscribed_data = (!empty($category_ids)) ? Models\UserCategory::with($enabledIncludes)->where('is_active', true)->whereIn('id', $category_ids)->where('user_id', $user->id)->get() : array();
-				} else {
-					$user->subscribed_data = array();
-				}
-			} else {
-				$user->is_subscribed = ($subscription_end_date && strtotime($subscription_end_date) >= strtotime(date('Y-m-d'))) ? true : false;
-				if ($user->is_subscribed) {
-					if (isset($queryParams['category_id']) && $queryParams['category_id'] != "") {
-						$usercategoriesList = Models\UserCategory::select('id')->where('is_active', true)->where('category_id', $queryParams['category_id'])->get()->toArray();
-						if (!empty($usercategoriesList)) {
-							$category_ids = array_column($usercategoriesList, 'id');
-							$categoryIdArr = Models\Attachment::select('id', 'foreign_id')->whereIn('foreign_id', $category_ids)->where('user_id', $user->id)->where('class', 'UserProfile')->where('is_admin_approval', 2)->get()->toArray();
-						}
-					} else {
-						if (!empty($usercategories)) {
-							$category_ids = array_column($usercategories, 'id');						
-							$categoryIdArr = Models\Attachment::select('id', 'foreign_id')->whereIn('foreign_id', $category_ids)->where('user_id', $user->id)->where('class', 'UserProfile')->where('is_admin_approval', 2)->get()->toArray();
-						}
-					}
-				}
 			}			
-		}
-		if (!isset($user->is_subscribed) || $user->is_subscribed == false) {
-			if (isset($queryParams['category_id']) && $queryParams['category_id'] != "") {
-				$usercategoriesList = Models\UserCategory::select('id')->where('is_active', true)->where('category_id', $queryParams['category_id'])->get()->toArray();
-				if (!empty($usercategoriesList)) {
-					$category_ids = array_column($usercategoriesList, 'id');
-					$categoryIdArr = Models\Attachment::select('id', 'foreign_id')->whereIn('foreign_id', $category_ids)->where('user_id', $user->id)->where('class', 'UserProfile')->where('is_admin_approval', 2)->where('ispaid', 0)->get()->toArray();
-				}
-			} else {
-				if (!empty($usercategories)) {
-					$category_ids = array_column($usercategories, 'id');						
-					$categoryIdArr = Models\Attachment::select('id', 'foreign_id')->whereIn('foreign_id', $category_ids)->where('user_id', $user->id)->where('class', 'UserProfile')->where('is_admin_approval', 2)->where('ispaid', 0)->get()->toArray();
-				}
-			}
-			$enabledIncludes = array(
-				'category',
-				'attachments_free'
-			);
-		}
-		
-		if (!empty($categoryIdArr)) {
-			$category_ids = array_column($categoryIdArr, 'foreign_id');
-			$user->subscribed_data = (!empty($category_ids)) ? json_decode(str_replace('attachments_free', 'attachments' , json_encode(Models\UserCategory::with($enabledIncludes)->where('is_active', true)->whereIn('id', $category_ids)->where('user_id', $user->id)->get())), true) : array();
-		} else {
-			$user->subscribed_data = array();
 		}
 			
 		if (!empty($user)) {
 			$user = $user->toArray();
-			$user['categories'] = (!isset($queryParams['category_id']) || (isset($queryParams['category_id']) && $queryParams['category_id'] == '') && !empty($categories)) ? $categories : array();
-			$socials = array();
-			if ($user['instagram_url'] != '') {
-				$socialSub = array();
-				$socialSub['id'] = 1;
-				$socialSub['name'] = 'Instagram';
-				$socialSub['url'] = $user['instagram_url'];
-				$socialSub['mobile_image'] = $_server_domain_url.'/images/static/instagram_mobile.png';
-				$socialSub['web_image'] = $_server_domain_url.'/images/static/instagram.png';
-				$socials[] = $socialSub;
-			}
-			if ($user['tiktok_url'] != '') {
-				$socialSub = array();
-				$socialSub['id'] = 2;
-				$socialSub['name'] = 'Tiktok';
-				$socialSub['url'] = $user['tiktok_url'];
-				$socialSub['mobile_image'] = $_server_domain_url.'/images/static/tiktok_mobile.png';
-				$socialSub['web_image'] = $_server_domain_url.'/images/static/tiktok.png';
-				$socials[] = $socialSub;
-			}
-			if ($user['youtube_url'] != '') {
-				$socialSub = array();
-				$socialSub['id'] = 3;
-				$socialSub['name'] = 'Youtube';
-				$socialSub['url'] = $user['youtube_url'];
-				$socialSub['mobile_image'] = $_server_domain_url.'/images/static/youtube_mobile.png';
-				$socialSub['web_image'] = $_server_domain_url.'/images/static/youtube.png';
-				$socials[] = $socialSub;
-			}
-			if ($user['twitter_url'] != '') {
-				$socialSub = array();
-				$socialSub['id'] = 4;
-				$socialSub['name'] = 'Twitter';
-				$socialSub['url'] = $user['twitter_url'];
-				$socialSub['mobile_image'] = $_server_domain_url.'/images/static/twitter_mobile.png';
-				$socialSub['web_image'] = $_server_domain_url.'/images/static/twitter.png';
-				$socials[] = $socialSub;
-			}
-			if ($user['facebook_url'] != '') {
-				$socialSub = array();
-				$socialSub['id'] = 5;
-				$socialSub['name'] = 'Facebook';
-				$socialSub['url'] = $user['facebook_url'];
-				$socialSub['mobile_image'] = $_server_domain_url.'/images/static/facebook_mobile.png';
-				$socialSub['web_image'] = $_server_domain_url.'/images/static/facebook.png';
-				$socials[] = $socialSub;
-			}
 			$user['socials'] = $socials;
 			if ($user['address'] == '') {
 				$user['address']['id'] = 0;
@@ -1146,6 +1062,14 @@ $app->DELETE('/api/v1/users/{userId}', function ($request, $response, $args) {
     } else {
         return renderWithJson($result, 'Invalid User details.', '', 1);
     }
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->PUT('/api/v1/suspend-or-activate/{userId}', function ($request, $response, $args) {
+    global $authUser;
+	$user = Models\User::Where('id', $request->getAttribute('userId'))->first();
+	Models\User::where('id', $request->getAttribute('userId'))->update(array(
+				'is_active' => (($user->is_active == 0) ? 1 : 0)
+			));
+	return renderWithJson(array(), 'Successfully updated','', 0);
 })->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
 /**
  * GET ProvidersGet
@@ -1506,17 +1430,18 @@ $app->GET('/api/v1/settings', function ($request, $response, $args) {
 		foreach($settings as $setting) {
 			$data[$setting['name']] = $setting['value'];
 		}
-		$subscription = Models\Subscription::where('is_active', true)->get()->toArray();
-		$data['SUBSCRIBE_NAME'] = $subscription[0]['description'];
-		$data['SUBSCRIBE_PRICE'] = $subscription[0]['price'];
-		$data['SUBSCRIBE_DAYS'] = $subscription[0]['days'];
-		// if (!empty($authUser) && ($authUser->role_id == \Constants\ConstUserTypes::Admin || $authUser->role_id == \Constants\ConstUserTypes::Company)) {
 		if (!empty($queryParams['is_web'])) {
 			$file = __DIR__ . '/admin-config.php';
 			$resultSet = array();
 			if (file_exists($file)) {
 				require_once $file;
 				$data['MENU'] = $menus;
+				//if (!empty($authUser)) {
+					//if ($authUser->role_id == \Constants\ConstUserTypes::Admin) {
+						
+					//} else if ($authUser->role_id == \Constants\ConstUserTypes::Company) {						
+					//}
+				//}
 			}
 		}
 		$result = array(
@@ -2228,7 +2153,33 @@ $app->PUT('/api/v1/admin/pages/{id}', function ($request, $response, $args) {
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
 })->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
-$app->GET('/api/v1/admin/sizes', function ($request, $response, $args) {
+$app->GET('/api/v1/admin/levels', function ($request, $response, $args) {
+	
+    try {
+        
+        $result = array(
+            'data' => array(
+				array(
+					'id'=> 1,
+					'name'=> 'Low'
+				),
+				array(
+					'id'=> 2,
+					'name'=> 'Medium'
+				),
+				array(
+					'id'=> 3,
+					'name'=> 'High'
+				)
+			),
+            '_metadata' => $respones
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin'));
+$app->GET('/api/v1/admin/island', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
 	$queryParams = $request->getQueryParams();
     $result = array();
@@ -2238,7 +2189,7 @@ $app->GET('/api/v1/admin/sizes', function ($request, $response, $args) {
             $count = $queryParams['limit'];
         }
 		$queryParams['is_active'] = true;
-        $respones = Models\Size::Filter($queryParams)->paginate($count);
+        $respones = Models\Island::Filter($queryParams)->paginate($count);
 		$respones = $respones->toArray();
         $data = $respones['data'];
         unset($respones['data']);
@@ -2250,38 +2201,38 @@ $app->GET('/api/v1/admin/sizes', function ($request, $response, $args) {
     } catch (Exception $e) {
         return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
     }
-})->add(new ACL('canAdmin canCompanyUser'));
-$app->GET('/api/v1/admin/sizes/{id}', function ($request, $response, $args) {
+})->add(new ACL('canAdmin'));
+$app->GET('/api/v1/admin/island/{id}', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
 	try {
 		$queryParams = $request->getQueryParams();
 		$result = array();
-		$size = Models\Size::where('id', $request->getAttribute('id'))->first();
+		$island = Models\Island::where('id', $request->getAttribute('id'))->first();
 		$result = array();
-		$result['data'] = $size;
+		$result['data'] = $island;
 		return renderWithJson($result, 'Success','', 0);
 	} catch (Exception $e) {
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
 })->add(new ACL('canAdmin canCompanyUser'));
-$app->POST('/api/v1/admin/sizes', function ($request, $response, $args) {
+$app->POST('/api/v1/admin/island', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
 	$args = $request->getParsedBody();
 	$result = array();
     try {
-        $size = new Models\Size;
-		$size->name = $args['name'];
-		$size->is_active = true;
-		$size->save();
+        $island = new Models\Island;
+		$island->name = $args['name'];
+		$island->is_active = true;
+		$island->save();
         return renderWithJson($result, 'Successfully added','', 0);
     } catch (Exception $e) {
         return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
     }
 })->add(new ACL('canAdmin canCompanyUser'));
-$app->PUT('/api/v1/admin/sizes/{id}', function ($request, $response, $args) {
+$app->PUT('/api/v1/admin/island/{id}', function ($request, $response, $args) {
 	$args = $request->getParsedBody();
 	try {
-		Models\Size::where('id', $request->getAttribute('id'))->update(array(
+		Models\Island::where('id', $request->getAttribute('id'))->update(array(
 			'name' => $args['name']
 		));
 		return renderWithJson(array(), 'Successfully updated','', 0);
@@ -2289,10 +2240,10 @@ $app->PUT('/api/v1/admin/sizes/{id}', function ($request, $response, $args) {
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
 })->add(new ACL('canAdmin canCompanyUser'));
-$app->PUT('/api/v1/admin/sizes/delete/{id}', function ($request, $response, $args) {
+$app->PUT('/api/v1/admin/island/delete/{id}', function ($request, $response, $args) {
 	$args = $request->getParsedBody();
 	try {
-		Models\Size::where('id', $request->getAttribute('id'))->update(array(
+		Models\Island::where('id', $request->getAttribute('id'))->update(array(
 			'is_active' => false
 		));
 		return renderWithJson(array(), 'Successfully delete','', 0);
@@ -2300,6 +2251,380 @@ $app->PUT('/api/v1/admin/sizes/delete/{id}', function ($request, $response, $arg
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
 })->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/admin/symptom', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+        $count = PAGE_LIMIT;
+        if (!empty($queryParams['limit'])) {
+            $count = $queryParams['limit'];
+        }
+		$queryParams['is_active'] = true;
+        $respones = Models\Symptom::Filter($queryParams)->paginate($count);
+		$respones = $respones->toArray();
+        $data = $respones['data'];
+        unset($respones['data']);
+        $result = array(
+            'data' => $data,
+            '_metadata' => $respones
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin'));
+$app->GET('/api/v1/symptoms', function ($request, $response, $args) {
+    $result = array();
+    try {
+        $respones = Models\Symptom::select('id', 'name', 'level')->where('is_active', true)->orderBy('name', 'asc')->get();
+		$respones[] = array(
+			"id" => 0,
+            "name" => "None",
+			"level" => 1
+		);
+		$result = array(
+            'data' => $respones,
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+});
+$app->GET('/api/v1/admin/symptom/{id}', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$queryParams = $request->getQueryParams();
+		$result = array();
+		$symptom = Models\Symptom::where('id', $request->getAttribute('id'))->first();
+		$result = array();
+		$result['data'] = $symptom;
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->POST('/api/v1/admin/symptom', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+        $symptom = new Models\Symptom;
+		$symptom->name = $args['name'];
+		$symptom->is_active = true;
+		$symptom->save();
+        return renderWithJson($result, 'Successfully added','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->PUT('/api/v1/admin/symptom/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\Symptom::where('id', $request->getAttribute('id'))->update(array(
+			'name' => $args['name']
+		));
+		return renderWithJson(array(), 'Successfully updated','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->PUT('/api/v1/admin/symptom/delete/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\Symptom::where('id', $request->getAttribute('id'))->update(array(
+			'is_active' => false
+		));
+		return renderWithJson(array(), 'Successfully delete','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/admin/document', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+        $count = PAGE_LIMIT;
+        if (!empty($queryParams['limit'])) {
+            $count = $queryParams['limit'];
+        }
+		$queryParams['is_active'] = true;
+        $respones = Models\Document::Filter($queryParams)->paginate($count);
+		$respones = $respones->toArray();
+        $data = $respones['data'];
+        unset($respones['data']);
+        $result = array(
+            'data' => $data,
+            '_metadata' => $respones
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin'));
+$app->GET('/api/v1/documents', function ($request, $response, $args) {
+    $result = array();
+    try {
+        $respones = Models\Document::with('document')->where('is_active', true)->orderBy('name', 'asc')->get();
+		$responeFormatted = array();
+		foreach ($respones as $response) {
+			$response['data'] = json_decode(str_replace('\\\\', '' ,$response['data']), true);
+			$responeFormatted[] = $response;
+		}
+		$result = array(
+            'data' => $respones,
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->PUT('/api/v1/document', function ($request, $response, $args) {
+	global $authUser;
+	$args = $request->getParsedBody();
+    $result = array();
+    try {
+		if (empty($args['image'])) {
+			return renderWithJson($result, $message = 'Image Required', $fields = '', $isError = 1);
+		}
+        $respones = Models\UserDocument::where('document_id', $args['document_id'])->where('user_id', $authUser->id)->get();
+		$data = array();
+		if (!empty($respones)) {
+			Capsule::select('delete from user_documents where document_id='.$args['document_id']);
+			$data['isDeleteId'] = $args['id'];
+		}
+		$document = new Models\UserDocument;
+		$document->user_id = $authUser->id;
+		$document->document_id = $args['document_id'];
+		$document->data = addslashes(json_encode($args['data']));
+		$document->save();
+		saveImage('Document', $args['image'], $document->id, false, $authUser->id, 0, $data);
+		$result = array(
+            'data' => $respones,
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->GET('/api/v1/document/delete/{id}', function ($request, $response, $args) {
+	global $authUser;
+	$args = $request->getParsedBody();
+    $result = array();
+    try {
+		$respones = Models\UserDocument::where('id', $request->getAttribute('id'))->where('user_id', $authUser->id)->get();
+		if (!empty($respones)) {
+			Capsule::select('delete from user_documents where id='.$request->getAttribute('id'));
+		}
+		$data = array();
+		$data['isDeleteId'] = $request->getAttribute('id');
+		$data['clean'] = true;
+		saveImage('Document', null, null, false, null, 0, $data);
+		$result = array(
+            'data' => $respones,
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->GET('/api/v1/admin/document/{id}', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$queryParams = $request->getQueryParams();
+		$result = array();
+		$document = Models\Document::where('id', $request->getAttribute('id'))->first();
+		$result = array();
+		$result['data'] = $document;
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->POST('/api/v1/admin/document', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+        $document = new Models\Document;
+		$document->name = $args['name'];
+		$document->is_active = true;
+		$document->save();
+        return renderWithJson($result, 'Successfully added','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->PUT('/api/v1/admin/document/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\Document::where('id', $request->getAttribute('id'))->update(array(
+			'name' => $args['name']
+		));
+		return renderWithJson(array(), 'Successfully updated','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->PUT('/api/v1/admin/document/delete/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\Document::where('id', $request->getAttribute('id'))->update(array(
+			'is_active' => false
+		));
+		return renderWithJson(array(), 'Successfully delete','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/activity', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+		if ($authUser->role_id == \Constants\ConstUserTypes::Employer) {
+			$result = array(
+				'today' => Models\DailyTest::whereHas('user', function ($q) use ($authUser) {
+								$q->where('company_id', $authUser->id);
+							})->where('fill_date', date('Y-m-d'))->get()->toArray(),
+				'yesterday' => Models\DailyTest::whereHas('user', function ($q) use ($authUser) {
+								$q->where('company_id', $authUser->id);
+							})->where('fill_date', date('Y-m-d',strtotime("-1 days")))->get()->toArray()
+			);
+		} else {
+			$result = array(
+				'today' => Models\DailyTest::with('user')->where('fill_date', date('Y-m-d'))->get()->toArray(),
+				'yesterday' => Models\DailyTest::with('user')->where('fill_date', date('Y-m-d',strtotime("-1 days")))->get()->toArray()
+			);
+		}
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
+$app->GET('/api/v1/tested', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+        $result = array(
+            'positive' => Models\User::with('attachment', 'test_type')->where('last_test_status', 1)->get()->toArray(),
+            'negative' => Models\User::with('attachment', 'test_type')->where('last_test_status', 0)->get()->toArray()
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+});
+$app->GET('/api/v1/admin/appointments', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+        $count = PAGE_LIMIT;
+        if (!empty($queryParams['limit'])) {
+            $count = $queryParams['limit'];
+        }
+		if (!empty($authUser) && $authUser->role_id != '1') {
+			$queryParams['center_id'] = $authUser->id;
+		}
+	    $respones = Models\ScheduleTest::with('user', 'test_type')->Filter($queryParams)->paginate($count);
+		$respones = $respones->toArray();
+        $data = $respones['data'];
+        unset($respones['data']);
+        $result = array(
+            'data' => $data,
+            '_metadata' => $respones
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canContestantUser canCompanyUser'));
+$app->POST('/api/v1/admin/appointments', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+		$scheduleTest = Models\ScheduleTest::where('user_id', $args['user_id'])->where('reg_date', $args['reg_date'])->first();
+		if (!empty($scheduleTest)) {
+			return renderWithJson($scheduleTest->toArray(), 'Already you have booked appointment', '', 1);
+		}
+		$args['card_id'] = 1;
+		$scheduleTest = new Models\ScheduleTest;
+		$scheduleTest->user_id = $args['user_id']['id'];
+		$scheduleTest->center_id = $args['center_id']['id'];
+		$scheduleTest->reg_date = $args['reg_date'];
+		$scheduleTest->from_timeslot = $args['from_timeslot']['name'];
+		$scheduleTest->test_type_id = $args['test_type_id']['id'];
+		$scheduleTest->card_id = $args['card_id'];
+		$scheduleTest->save();
+		$is_sanbox = 1;
+		$payment_gateway_id = 1;
+		insertTransaction(0, 1, \Constants\TransactionClass::Test, \Constants\TransactionType::Test, $payment_gateway_id, SITE_FEE, 0, 0, 0, 0, $scheduleTest->test_type_id, $is_sanbox, $authUser->id, 'COMPLETED', '122222', '23344343', $args['card_id']);
+		insertTransaction($authUser->id, 0, \Constants\TransactionClass::Test, \Constants\TransactionType::Test, $payment_gateway_id, SITE_FEE, 0, 0, 0, 0, $scheduleTest->test_type_id, $is_sanbox, 1 , 'COMPLETED', '122222', '23344343', $args['card_id']);
+		//$paymentGateway = getPaymentDetails($queryParams['payment_gateway_id']);
+        return renderWithJson(array(), 'Successfully added','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/admin/appointments/{id}', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$queryParams = $request->getQueryParams();
+		$result = array();
+		$scheduleTest = Models\ScheduleTest::where('center_id', $authUser->id)->where('id', $request->getAttribute('id'))->first();
+		$result = array();
+		$result['data'] = $scheduleTest;
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->PUT('/api/v1/admin/appointments/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\ScheduleTest::where('id', $request->getAttribute('id'))->update(array(
+			'status' => $args['status']
+		));
+		return renderWithJson(array(), 'Successfully updated','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->POST('/api/v1/schedule_test/scan/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		$header = array(
+			'Authorization: eyJhbGciOiJub25lIn0.eyJkYXRhIjoiQnQtQVBJLTIwMjAifQ.'
+		);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, 'https://covid-qr-image.herokuapp.com/api/v1/verify?code='.$args['qr_code']);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$result = curl_exec($ch);
+		if (!empty($result)) {
+			$result = json_decode($result, true);
+			if(strpos($result['messages']['errors'], 'invalid') !== false) {
+				return renderWithJson(array(), 'Invalid code','', 1);
+			}
+			Models\ScheduleTest::where('id', $request->getAttribute('id'))->update(array(
+				'status' => 1,
+				'qr_code' => $args['qr_code']
+			));
+		} else {
+			return renderWithJson(array(), 'Invalid code','', 1);
+		}
+		return renderWithJson(array(), '"Thank you for submitting your information. Your results are being processed and will be issued to you shortly."','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
 $app->GET('/api/v1/admin/categories', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
 	$queryParams = $request->getQueryParams();
@@ -2609,6 +2934,141 @@ $app->PUT('/api/v1/admin/subscriptions/{id}', function ($request, $response, $ar
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
 })->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/admin/users/list', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+		if ($authUser->role_id == 1) {
+			$result = Models\User::where('role_id', \Constants\ConstUserTypes::User)->where('is_active', 1)->get()->toArray();
+		} else {
+			$result = Models\User::where('company_id', $authUser->id)->where('role_id', \Constants\ConstUserTypes::User)->where('is_active', 1)->get()->toArray();
+		}
+		$result = array(
+			'data' => $result 
+		);
+		return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
+$app->GET('/api/v1/admin/test_type', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+        $count = PAGE_LIMIT;
+        if (!empty($queryParams['limit'])) {
+            $count = $queryParams['limit'];
+        }
+		$queryParams['is_active'] = true;
+        $respones = Models\TestType::Filter($queryParams)->paginate($count);
+		$respones = $respones->toArray();
+        $data = $respones['data'];
+        unset($respones['data']);
+        $result = array(
+            'data' => $data,
+            '_metadata' => $respones
+        );
+        return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin'));
+$app->GET('/api/v1/admin/test_type/{id}', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$queryParams = $request->getQueryParams();
+		$result = array();
+		$test_type = Models\Island::where('id', $request->getAttribute('id'))->first();
+		$result = array();
+		$result['data'] = $test_type;
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin'));
+$app->POST('/api/v1/admin/test_type', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+        $test_type = new Models\Island;
+		$test_type->name = $args['name'];
+		$test_type->is_active = true;
+		$test_type->save();
+        return renderWithJson($result, 'Successfully added','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin'));
+$app->PUT('/api/v1/admin/test_type/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\Island::where('id', $request->getAttribute('id'))->update(array(
+			'name' => $args['name']
+		));
+		return renderWithJson(array(), 'Successfully updated','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin'));
+$app->PUT('/api/v1/admin/test_type/delete/{id}', function ($request, $response, $args) {
+	$args = $request->getParsedBody();
+	try {
+		Models\Island::where('id', $request->getAttribute('id'))->update(array(
+			'is_active' => false
+		));
+		return renderWithJson(array(), 'Successfully delete','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin'));
+$app->GET('/api/v1/admin/test_types', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+		$result = Models\TestType::where('is_active', 1)->get()->toArray();
+		$result = array(
+			'data' => $result 
+		);
+		return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
+$app->GET('/api/v1/admin/slots', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$queryParams = $request->getQueryParams();
+    $result = array();
+    try {
+		$result = array(
+			array(
+				'id' => 0,
+				'name' => '00:00' 
+			),
+			array(
+				'id' => 1,
+				'name' => '00:05' 
+			),
+			array(
+				'id' => 2,
+				'name' => '00:10' 
+			),
+			array(
+				'id' => 3,
+				'name' => '10:00' 
+			)
+		);
+		$result = array(
+			'data' => $result 
+		);
+		return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
 $app->GET('/api/v1/admin/users', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
 	$queryParams = $request->getQueryParams();
@@ -2619,20 +3079,31 @@ $app->GET('/api/v1/admin/users', function ($request, $response, $args) {
             $count = $queryParams['limit'];
         }
 		$enabledIncludes = array(
-			'address'
+			'address',
+			'test_type'
 		);
-		$queryParams['is_active'] = true;
+		if ($authUser->role_id == \Constants\ConstUserTypes::Admin) {
+			$queryParams['is_active'] = true;
+		}
+		if ($authUser->role_id == \Constants\ConstUserTypes::Employer) {
+			$queryParams['company_id'] = $authUser->id;
+		}
 		if (!empty($queryParams['class'])) {
-			if ($queryParams['class'] === 'companies') {
+			if ($queryParams['class'] === 'testing_centers') {
 				$queryParams['role_id'] = \Constants\ConstUserTypes::Company;
-			} else if ($queryParams['class'] === 'contestants') {
+			} else if ($queryParams['class'] === 'employer') {
 				$queryParams['role_id'] = \Constants\ConstUserTypes::Employer;
+			} else if ($queryParams['class'] === 'employer_list') {
+				$queryParams['role_id'] = \Constants\ConstUserTypes::User;
+				if ($authUser['role_id'] != \Constants\ConstUserTypes::Admin) {
+					$queryParams['company_id'] = $authUser->id;
+				}
 			} else {
 				$queryParams['role_id'] = \Constants\ConstUserTypes::User;
 			}
 			unset($queryParams['class']);
 		}
-        $respones = Models\User::with($enabledIncludes)->Filter($queryParams)->paginate($count);
+		$respones = Models\User::with($enabledIncludes)->Filter($queryParams)->paginate($count);
 		$user_model = new Models\User;
 		$respones->makeVisible($user_model->hidden);
 		$respones = $respones->toArray();
@@ -2646,34 +3117,26 @@ $app->GET('/api/v1/admin/users', function ($request, $response, $args) {
     } catch (Exception $e) {
         return renderWithJson($result, $message = 'No record found', $fields = '', $isError = 1);
     }
-})->add(new ACL('canAdmin canCompanyUser'));
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
 $app->GET('/api/v1/admin/users/{userId}', function ($request, $response, $args) {
 	try {
 		$queryParams = $request->getQueryParams();
 		$result = array();
 		$enabledIncludes = array(
 			'attachment',
-			'address',
-			'user_categories'
+			'address'
 		);
 		$_GET['user_id'] = $request->getAttribute('userId');
 		$user = Models\User::with($enabledIncludes)->where('id', $request->getAttribute('userId'))->first();
 		$user->makeVisible(['email']);
 		$user = $user->toArray();
-		$user['category'] = array();
-		if (!empty($user['user_categories'])) {
-			foreach($user['user_categories'] as $cat) {
-				$user['category'][] = $cat['category'];
-			}
-			unset($user['user_categories']);
-		}
 		$result = array();
 		$result['data'] = $user;
 		return renderWithJson($result, 'Success','', 0);
 	} catch (Exception $e) {
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
-})->add(new ACL('canAdmin canCompanyUser'));
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
 $app->POST('/api/v1/admin/users', function ($request, $response, $args) {
 	global $authUser;
 	try {
@@ -2681,18 +3144,24 @@ $app->POST('/api/v1/admin/users', function ($request, $response, $args) {
 		$queryParams = $request->getQueryParams();
 		$role_id = \Constants\ConstUserTypes::User;
 		$company_id = 0;
-		if ($queryParams['class'] === 'companies') {
+		if ($queryParams['class'] === 'testing_centers') {
 			$role_id = \Constants\ConstUserTypes::Company;
-		} else if ($queryParams['class'] === 'contestants') {
+			$company_id = $authUser->id;
+		} else if ($queryParams['class'] === 'employer') {
 			$role_id = \Constants\ConstUserTypes::Employer;
 			$company_id = $authUser->id;
+		} else if ($queryParams['class'] === 'employer_list') {
+			$role_id = \Constants\ConstUserTypes::User;
+			$company_id = $authUser->id;
+		} else {
+			$role_id = \Constants\ConstUserTypes::User;
 		}
 		$result = addAdminUser($args, $role_id, $company_id);
 		return renderWithJson(array(), $result['message'],'', $result['code']);
 	} catch (Exception $e) {
         return renderWithJson(array(), 'No record found.'.$e->getMessage(), '', 1);
     }
-})->add(new ACL('canAdmin canCompanyUser'));
+})->add(new ACL('canAdmin canCompanyUser canContestantUser'));
 $app->PUT('/api/v1/admin/users/delete/{userId}', function ($request, $response, $args) {
 	global $authUser;
 	$userId = $request->getAttribute('userId');
@@ -2729,31 +3198,6 @@ $app->PUT('/api/v1/admin/users/{userId}', function ($request, $response, $args) 
 			}
 			if (isset($cover_photo) && $cover_photo != '') {
 				saveImage('CoverPhoto', $cover_photo, $userId);
-			}
-			if (!empty($categories) && $user->role_id === \Constants\ConstUserTypes::Employer) {
-				$category_ids = array_column($categories, 'id');
-				$userCategoryId = Models\UserCategory::where('user_id', $userId)->get()->toArray();
-				$userCategoryIds = array_column($userCategoryId, 'category_id');
-				$adds = array_diff($category_ids,$userCategoryIds);
-				$deletes = array_diff($userCategoryIds,$category_ids);
-				if (!empty($adds)) {
-					foreach ($adds as $add) {
-						$userCategory = new Models\UserCategory;
-						$userCategory->user_id = $userId;
-						$userCategory->category_id = $add;
-						$userCategory->save();
-					}
-				}
-				if (!empty($deletes)) {
-					foreach ($userCategoryId as $userCatId) {
-						if(in_array($userCatId['category_id'] , $deletes)) {
-							$isActive = ($userCatId['is_active'] == false) ? true : false;
-							Models\UserCategory::where('user_id', $userId)->whereIn('category_id', $deletes)->update(array(
-								'is_active'=> $isActive
-							));
-						}
-					}
-				}
 			}
 			if (isset($addressDetail) && $addressDetail != '') {
 				$count = Models\UserAddress::where('user_id', $userId)->where('is_default', true)->count();
@@ -3212,7 +3656,8 @@ $app->GET('/api/v1/admin/transactions', function ($request, $response, $args) {
 			'user',
             'other_user',
 			'parent_user',
-			'payment_gateway'
+			'payment_gateway',
+			'card'
 		);
 		if (!empty($queryParams['class'])) {
 			if ($queryParams['class'] == 'Product') {
@@ -5306,18 +5751,10 @@ $app->GET('/api/v1/transactions', function ($request, $response, $args) {
         $enabledIncludes = array(
 			'user',
             'other_user',
-			'payment_gateway'
+			'payment_gateway',
+			'card'
 		);
-		if (!empty($queryParams['class'])) {
-			if ($queryParams['class'] == 'Product') {
-				$enabledIncludes = array_merge($enabledIncludes,array('detail', 'parent_user'));
-			} else if ($queryParams['class'] == 'VotePackage' || $queryParams['class'] == 'InstantPackage') {
-				$enabledIncludes = array_merge($enabledIncludes,array('package', 'parent_user'));
-			} else if ($queryParams['class'] == 'SubscriptionPackage') {
-				$enabledIncludes = array_merge($enabledIncludes,array('subscription'));
-			}
-        }
-        $transactions = Models\Transaction::select('created_at', 'user_id', 'to_user_id', 'parent_user_id', 'foreign_id','payment_gateway_id', 'amount')->with($enabledIncludes);
+        $transactions = Models\Transaction::select('created_at', 'user_id', 'to_user_id', 'parent_user_id', 'foreign_id','payment_gateway_id', 'amount', 'card_id')->with($enabledIncludes);
 		if (!empty($authUser['id'])) {
             $user_id = $authUser['id'];
             $transactions->where(function ($q) use ($user_id) {
@@ -5365,7 +5802,7 @@ $app->POST('/api/v1/tell_a_friend', function ($request, $response, $args) use ($
 			return renderWithJson($result, 'Success','', 0);
 		}
 	}
-	return renderWithJson($result, 'Failed','', 0);
+	return renderWithJson($result, 'Failed','', 1);
 });
 $app->POST('/api/v1/feedback', function ($request, $response, $args) use ($app)
 {
@@ -5395,12 +5832,37 @@ $app->GET('/api/v1/centers', function ($request, $response, $args) use ($app)
 	);
 	return renderWithJson($results, 'centers details list fetched successfully','', 0);
 });
+$app->GET('/api/v1/admin/centers', function ($request, $response, $args) use ($app)
+{
+	global $authUser;
+	if (!empty($authUser) && $authUser->role_id == '1') {
+		$result = Models\User::where('role_id', \Constants\ConstUserTypes::Company)->where('is_active', 1)->get()->toArray();		
+	} else {
+		$result = Models\User::where('role_id', \Constants\ConstUserTypes::Company)->where('company_id', $authUser->id)->where('is_active', 1)->get()->toArray();
+	}
+	$results = array(
+		'data' => $result
+	);
+	return renderWithJson($results, 'centers details list fetched successfully','', 0);
+});
+$app->GET('/api/v1/testing_status', function ($request, $response, $args) use ($app)
+{
+	$centers = Models\Island::with('centers')->get()->toArray();
+	$results = array(
+		'data' => $centers
+	);
+	return renderWithJson($results, 'centers details list fetched successfully','', 0);
+});
 $app->POST('/api/v1/schedule_test', function ($request, $response, $args) use ($app)
 {
 	global $authUser, $_server_domain_url;
 	$args = $request->getParsedBody();
 	$result = array();
     try {
+		$scheduleTest = Models\ScheduleTest::where('user_id', $authUser->id)->where('reg_date', $args['reg_date'])->first();
+		if (!empty($scheduleTest)) {
+			return renderWithJson($scheduleTest->toArray(), 'Already you have booked appointment', '', 1);
+		}
 		//$scheduleTestExist = Models\ScheduleTest::where('reg_date', $args['reg_date'])->get();
 		//$customTimeSlot = Models\CustomTimeSlot::where('center_id', $args['center_id'])->where('date_detail', $args['reg_date'])->first();
 		//$isAvailable = false;
@@ -5416,50 +5878,102 @@ $app->POST('/api/v1/schedule_test', function ($request, $response, $args) use ($
 		$scheduleTest->user_id = $authUser->id;
 		$scheduleTest->center_id = $args['center_id'];
 		$scheduleTest->reg_date = $args['reg_date'];
+		$scheduleTest->from_timeslot = $args['from_timeslot'];
+		$scheduleTest->test_type_id = $args['test_type_id'];
 		$scheduleTest->save();
+		$is_sanbox = 1;
+		$payment_gateway_id = 1;
+		insertTransaction(0, 1, \Constants\TransactionClass::Test, \Constants\TransactionType::Test, $payment_gateway_id, SITE_FEE, 0, 0, 0, 0, $scheduleTest->test_type_id, $is_sanbox, $authUser->id, 'COMPLETED', '122222', '23344343', $args['card_id']);
+		insertTransaction($authUser->id, 0, \Constants\TransactionClass::Test, \Constants\TransactionType::Test, $payment_gateway_id, SITE_FEE, 0, 0, 0, 0, $scheduleTest->test_type_id, $is_sanbox, 1 , 'COMPLETED', '122222', '23344343', $args['card_id']);
+		//$paymentGateway = getPaymentDetails($queryParams['payment_gateway_id']);
         return renderWithJson(array(), 'Successfully added','', 0);
     } catch (Exception $e) {
         return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
     }
 })->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
-$app->PUT('/api/v1/schedule_test', function ($request, $response, $args) use ($app)
+$app->POST('/api/v1/schedule_test/scan', function ($request, $response, $args) use ($app)
 {
 	global $authUser, $_server_domain_url;
 	$args = $request->getParsedBody();
 	$result = array();
     try {
-		Models\ScheduleTest::where('user_id', $authUser->id)->where('id', $args['id'])->update(array(
-				'qr_code' => $args['qr_code']
-			));
+		$settings = Models\ScheduleTest::with('center')->where('qr_code', $args['qr_code'])->first();	
+		$result = array();
+		if (!empty($settings)) {
+			$settings = $settings->toArray();
+			if ($settings['user_id'] != $authUser->id) {
+				return renderWithJson(array(), 'Code already used', '', 1);
+			} else {
+				$result['data'] = $settings;
+				return renderWithJson($result, 'Success','', 0);
+			}
+		} else {
+			$scheduleTest = Models\ScheduleTest::with('center')->where('reg_date', $args['reg_date'])->first();	
+			if (!empty($scheduleTest)) {
+				$scheduleTest = $scheduleTest->toArray();
+				if (empty($scheduleTest['qr_code'])) {
+					Models\ScheduleTest::where('user_id', $authUser->id)->where('reg_date', $args['reg_date'])->update(array(
+						'qr_code' => $args['qr_code'],
+						'status' => 1
+					));
+					$scheduleTest['qr_code'] = $args['qr_code'];
+					$scheduleTest['status'] = 1;
+				} else if ($scheduleTest['qr_code'] != $args['qr_code']) {
+					return renderWithJson(array(), 'Invalid code', '', 1);
+				}
+				$result['data'] = $scheduleTest;
+				return renderWithJson($result, 'Success','', 0);
+			} else {
+				return renderWithJson(array(), 'No test found','', 1);
+			}
+		}
 		return renderWithJson(array(), 'Update successfully','', 0);
     } catch (Exception $e) {
         return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
     }
 })->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
-$app->POST('/api/v1/schedule_test/scan', function ($request, $response, $args) {
+$app->GET('/api/v1/schedule_test/latest', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
-	$args = $request->getParsedBody();
 	try {
 		$queryParams = $request->getQueryParams();
 		$result = array();
-		$settings = Models\ScheduleTest::with('center')->where('qr_code', $args['qr_code'])->get();	
+		$settings = Models\ScheduleTest::with('center')->where('user_id', $authUser->id)->first();
 		$result = array();
-		if (!empty($settings) && !empty($settings[0])) {
-			$result['data'] = $settings[0];
+		if (!empty($settings)) {
+			$result['data'] = $settings->toArray();
 			return renderWithJson($result, 'Success','', 0);
 		} else {
-			return renderWithJson(array(), 'Invalid code', '', 1);
+			return renderWithJson($result, 'No Records','', 0);
 		}
+		
 	} catch (Exception $e) {
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
 	}
 })->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->POST('/api/v1/schedule_test/time_slot', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$result = array();
+		$result['data'] = array(array(
+			"time" => "10:00",
+			"count" => 4
+		),
+		array(
+		"time"=>"13:00",
+		"count"=> 3
+		)
+		);
+		return renderWithJson($result, 'Success','', 0);		
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+});
 $app->GET('/api/v1/schedule_test/detail/{id}', function ($request, $response, $args) {
 	global $authUser, $_server_domain_url;
 	try {
 		$queryParams = $request->getQueryParams();
 		$result = array();
-		$settings = Models\ScheduleTest::with('center')->where('id', $request->getAttribute('id'))->get();	
+		$settings = Models\ScheduleTest::with('center')->where('user_id', $authUser->id)->where('id', $request->getAttribute('id'))->get();	
 		$result = array();
 		$result['data'] = $settings[0];
 		return renderWithJson($result, 'Success','', 0);
@@ -5472,12 +5986,287 @@ $app->GET('/api/v1/schedule_test', function ($request, $response, $args) {
 	try {
 		$queryParams = $request->getQueryParams();
 		$result = array();
-		$settings = Models\ScheduleTest::where('user_id', $authUser->id)->get();	
+		$schedule_tests = Models\ScheduleTest::with('center')->where('user_id', $authUser->id)->get();	
+		$result = array();
+		$result['data'] = $schedule_tests;
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->POST('/api/v1/time_slots', function ($request, $response, $args) {
+	global $authUser;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+		Capsule::select('Delete from time_slots where center_id='.$authUser->id);
+		Capsule::select('Delete from slots where type=0 and center_id='.$authUser->id);
+		foreach($args['time_slot'] as $timeSlotData) {
+			$timeSlot = new Models\TimeSlot;
+			$timeSlot->center_id = $authUser->id;
+			$timeSlot->day = $timeSlotData['day'];
+			$timeSlot->type = $timeSlotData['type'];
+			$timeSlot->save();
+			$time_slot_id = $timeSlot->id;
+			if ($timeSlot->type === 0) {
+				foreach($timeSlotData['timeSlots'] as $timeData) {
+					$slot = new Models\Slot;
+					$slot->center_id = $authUser->id;
+					$slot->time_slot_id = $time_slot_id;
+					$slot->type = 0;
+					$slot->from_timeslot = $timeData['time'];
+					$slot->slot_count = $timeData['slot'];
+					$slot->save();
+				}
+			}
+		}
+        return renderWithJson($result, 'Successfully saved','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/time_slots', function ($request, $response, $args) {
+	global $authUser;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+		$settings = Models\TimeSlot::where('center_id', $authUser->id)->with('slots')->get();	
+		$result = array();
+		$result['data'] = $settings;
+		return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->POST('/api/v1/custom_time_slots', function ($request, $response, $args) {
+	global $authUser;
+	$args = $request->getParsedBody();
+	$result = array();
+    try {
+		Capsule::select('Delete from custom_time_slots where center_id='.$authUser->id);
+		Capsule::select('Delete from slots where type=1 and center_id='.$authUser->id);
+		$customTimeSlot = new Models\CustomTimeSlot;
+		$customTimeSlot->center_id = $authUser->id;
+		$customTimeSlot->date_detail = $args['date_detail'];
+		$customTimeSlot->type = $args['type'];
+		$customTimeSlot->save();
+		$time_slot_id = $customTimeSlot->id;
+		
+		if ($customTimeSlot->type === 0) {
+			foreach($args['time_slots'] as $timeData) {
+				$slot = new Models\Slot;
+				$slot->center_id = $authUser->id;
+				$slot->time_slot_id = $time_slot_id;
+				$slot->type = 1;
+				$slot->from_timeslot = $timeData['time'];
+				$slot->slot_count = $timeData['slot'];
+				$slot->save();
+			}
+		}
+        return renderWithJson($result, 'Successfully saved','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->GET('/api/v1/custom_time_slots', function ($request, $response, $args) {
+	global $authUser;
+	$queryParams = $request->getQueryParams();
+	$result = array();
+    try {
+		$customTimeSlot = Models\CustomTimeSlot::where('center_id', $authUser->id)->where('date_detail', $queryParams['date_detail'])->with('slots')->get();	
+		$result = array();
+		$result['data'] = $customTimeSlot;
+		return renderWithJson($result, 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canCompanyUser'));
+$app->POST('/api/v1/mail_test', function ($request, $response, $args) use ($app)
+{
+	$result = array();
+	$args = $request->getParsedBody();
+	$result['status'] = 'Failed';
+	if ($args && $args['email']) {		
+		$result['status'] = mail($args['email'],"Mail Test","Testing Mail");
+	}
+	return renderWithJson($result, 'Success','', 0);
+});
+$app->POST('/api/v1/verify_phone', function ($request, $response, $args) use ($app)
+{
+	$args = $request->getParsedBody();
+	if (!empty($args['code'])) {
+		$registerTemp = Models\RegisterTemp::where('code', $args['code'])->first();
+		if (!empty($registerTemp)) {
+			return renderWithJson(array(), 'Success','', 0);
+		} else {
+			return renderWithJson(array(), 'error', 'Invalid Code', 1);
+		}
+	}
+	if (empty($args['mobile'])) {
+		return renderWithJson(array(), 'error', 'Mobile number is required', 1);
+	} else if (strpos($args['mobile'], '+') === false) {
+		return renderWithJson(array(), 'error', 'Country code is required in Mobile number', 1);
+	}
+	$users = Models\User::select('id')->where('mobile', $args['mobile'])->get()->toArray();
+	if (!empty($users)) {
+		return renderWithJson(array(), 'error', 'User already exist please login', 1);
+	}
+	$digits = 4;
+	$code = str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
+	
+	Capsule::select('delete from register_temp where mobile='.$args['mobile']);
+	$sms = send_twilio_text_sms($args['mobile'], "BID Registration Code is ".$code);
+	
+	if (empty($sms) || empty($sms['RestException'])) {
+		$registerTemp = new Models\RegisterTemp;
+		$registerTemp->mobile = $args['mobile'];
+		$registerTemp->code = $code;
+		$registerTemp->save();
+		return renderWithJson(array(), 'Success','', 0);
+	} else {
+		return renderWithJson(array(), 'error', $sms['RestException']['Message'], 1);
+	}
+});
+$app->GET('/api/v1/push_notification', function ($request, $response, $args) {
+	global $authUser;
+	$queryParams = $request->getQueryParams();
+	$result = array();
+    try {
+		$users = Models\User::select('id', 'device_token')->where('device_token', '<>' , '')->get();
+		if (!empty($users)) {
+			foreach($users as $user) {
+				$data = array();
+				$data['to'] = $user['device_token'];
+				$data['priority'] = "high";
+				$data['content_available'] = true;
+				$dataObj = array();
+				$dataObj['schedule_id'] = 1;
+				$dataObj['type'] = 'Scheduled';
+				$data['data'] = $dataObj;
+				$notificationData = array();
+				$notificationData['title'] = 'Covid Test';
+				$notificationData['body'] = 'Your Covid as been scheduled on '.date('Y-m-d', strtotime(date('Y-m-d'). ' + 2 days'));
+				$notificationData['sound'] = 'default';
+				$notificationData['click_action'] = 'Home';
+				$data['notification'] = $notificationData;
+				$header = array(
+					'Content-Type: application/json',
+					'Authorization: key=AAAAhZd6E08:APA91bE0jMjHu5WoVL2jZBQZygwuwOvgSjUuxvZO8joQXcUaFxKNvUObHpumk-NHFxKCNB86a0jMdWLMMMDMARKR_PxkFr_eaH0As6QsjSawEFpxj2U4WPr5eqbOBvtMhKZA42bEp6RD'
+				);
+				curl_post('https://fcm.googleapis.com/fcm/send', $header, json_encode($data));
+				$pushNotification = new Models\PushNotification;
+				$pushNotification->user_id = 178;
+				$pushNotification->title = 'Covid Test';
+				$pushNotification->body = $notificationData['body'];
+				$pushNotification->save();
+			}
+			
+		}
+		return renderWithJson(array(), 'Success','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($result, $e->getMessage(), $fields = '', $isError = 1);
+    }
+});
+$app->GET('/api/v1/notifications', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$result = array();
+		$settings = Models\PushNotification::where('user_id', $authUser->id)->get();	
 		$result = array();
 		$result['data'] = $settings;
 		return renderWithJson($result, 'Success','', 0);
 	} catch (Exception $e) {
 		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->PUT('/api/v1/notifications', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$result = array();
+		$args = $request->getParsedBody();
+		foreach($args['ids'] as $id) {
+			Models\PushNotification::where('id', $id)->where('user_id', $authUser->id)->update(array(
+				'is_read' => 1
+			));
+		}
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->GET('/api/v1/notification/settings', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	try {
+		$result = array();
+		$settings = Models\User::select('account_update_action', 'detail_shared', 'account_update_finished')->where('id', $authUser->id)->first();	
+		$result = array();
+		$result['data'] = $settings;
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->PUT('/api/v1/notification/settings', function ($request, $response, $args) {
+	global $authUser, $_server_domain_url;
+	$args = $request->getParsedBody();
+		try {
+			Models\User::where('id', $authUser->id)->update(array(
+				'account_update_action' => $args['account_update_action'],
+				'detail_shared' => $args['detail_shared'],
+				'account_update_finished' => $args['account_update_finished']
+			));
+		$result = array();
+		return renderWithJson($result, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson(array(), 'error', $e->getMessage(), 1);
+	}
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->POST('/api/v1/daily_test', function ($request, $response, $args) {
+    global $authUser;
+	$args = $request->getParsedBody();
+	$results = array();
+    try {
+		$dailyTestIn = Models\DailyTest::where('fill_date', date('Y-m-d'))->first();
+		if (!empty($dailyTestIn)) {
+			Capsule::select('delete from daily_test_symptoms where daily_test_id='.$dailyTestIn->id);
+			$dailyTestIn->delete();
+		}
+		$dailyTest = new Models\DailyTest;
+		$dailyTest->user_id = $authUser->id;
+		$dailyTest->fill_date = date('Y-m-d');
+		$dailyTest->covid_contact = $args['covid_contact'];
+		$dailyTest->result = $args['result'];
+		$dailyTest->save();
+		foreach($args['symptoms'] as $symptom) {
+			$dailyTestSymptom = new Models\DailyTestSymptom;
+			$dailyTestSymptom->daily_test_id = $dailyTest->id;
+			$dailyTestSymptom->symptom_id = $symptom;
+			$dailyTestSymptom->save();
+		}		
+		return renderWithJson($results, 'Successfully added','', 0);
+    } catch (Exception $e) {
+        return renderWithJson($results, $message = 'No record found', $fields = '', $isError = 1);
+    }
+})->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
+$app->GET('/api/v1/daily_test', function ($request, $response, $args) {
+    global $authUser;
+	$queryParams = $request->getQueryParams();
+	$results = array();
+	try {
+		$count = PAGE_LIMIT;
+		if (!empty($queryParams['limit'])) {
+			$count = $queryParams['limit'];
+		}
+		$dailyTests = Models\DailyTest::with('symptoms')->Filter($queryParams)->paginate($count)->toArray();
+		$data = $dailyTests['data'];
+		unset($dailyTests['data']);
+		$results = array(
+			'data' => $data,
+			'_metadata' => $dailyTests
+		);
+		return renderWithJson($results, 'Success','', 0);
+	} catch (Exception $e) {
+		return renderWithJson($results, $message = 'No record found', $fields = '', $isError = 1);
 	}
 })->add(new ACL('canAdmin canUser canContestantUser canCompanyUser'));
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function($req, $res) {

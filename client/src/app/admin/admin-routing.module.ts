@@ -82,6 +82,13 @@ const routes: Routes = [
                     )
             },
             {
+                path: 'tested',
+                loadChildren: () =>
+                    import('./tested/tested.module').then(
+                        (m) => m.TestedModule
+                    )
+            },
+            {
                 path: 'checkup',
                 loadChildren: () =>
                     import('./checkup/checkup.module').then(

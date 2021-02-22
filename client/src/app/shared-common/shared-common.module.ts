@@ -8,6 +8,7 @@ import { TabComponent } from './tab/tab.component';
 import { TabsComponent } from './tab/tabs.component';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
+import { AgePipe } from '../utils/age';
 
 @NgModule({
     declarations: [
@@ -15,7 +16,8 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
         AttachmentUploadComponent,
         PaginationComponent,
         TabComponent,
-        TabsComponent
+        TabsComponent,
+        AgePipe
     ],
     imports: [
         CommonModule,
@@ -27,7 +29,8 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
         AttachmentUploadComponent,
         PaginationComponent,
         TabComponent,
-        TabsComponent
+        TabsComponent,
+        AgePipe
     ]
 })
 export class SharedCommonModule {}

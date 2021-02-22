@@ -32,6 +32,13 @@ class Island extends AppModel
     );
 	public function centers()
     {
-		return $this->hasMany('Models\Center', 'island_id', 'id');
+		return $this->hasMany('Models\User', 'island_id', 'id')->select(
+		'id',
+		'island_id',
+        'name',
+        'lat',
+        'lon',
+        'is_active'
+		)->with('test_types');
     }
 }

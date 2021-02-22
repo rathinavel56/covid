@@ -26,8 +26,8 @@
                             </div>
                         </div>
 
-                        <div class="form-group pad-top-5">
-                            <p class="text-b db-c"> Total 04 of 04 </p>
+                        <div class="form-group pad-top-5" *ngIf="metaData">
+                            <p class="text-b db-c"> Total {{previousPage ? previousPage : 1}} of {{metaData.total}} </p>
                         </div>
                     </form>
                 </div>
@@ -38,131 +38,32 @@
             <table class="table table-checkbox">
                 <thead>
                     <tr>
-                        <th>
-                            <input type="checkbox" id="unread_all">
-                            <label for="unread_all"></label>
-                        </th>
+                        <th> Sl.NO </th>
                         <th> Name </th>
                         <th> Test Type </th>
                         <th> Status </th>
-                        <th> </th>
+                        <th> Date Time</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    <tr>
-                        <td>
-                            <input type="checkbox" id="unread_01">
-                            <label for="unread_01"></label>
-                        </td>
-
-                        <td> Name (B-ID:ABC-123456) </td>
-
-                        <td> Rapid Ag </td>
-
-                        <td> Negative </td>
-
+                    <tr *ngFor="let user of users; let indexUser = index">
+                        <td>{{indexUser + 1}}</td>
+                        <td> {{user.first_name}} {{user.last_name}}</td>
+                        <td> {{user.test_type ? user.test_type.name : ''}} </td>
+                        <td> {{user.last_test_status ? user.last_test_status.name : ''}}   </td>
                         <td class="text-right"> 07 December 2019 , 00:49 </td>
                     </tr>
-
-                    <tr>
-                        <td>
-                            <input type="checkbox" id="unread_02">
-                            <label for="unread_02"></label>
-                        </td>
-
-                        <td> Name (B-ID:ABC-123456) </td>
-
-                        <td> </td>
-
-                        <td> </td>
-
-                        <td class="text-right"> 07 December 2019 , 00:49 </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                            <input type="checkbox" id="unread_03">
-                            <label for="unread_03"></label>
-                        </td>
-
-                        <td> Name (B-ID:ABC-123456) </td>
-
-                        <td> </td>
-
-                        <td> </td>
-
-                        <td class="text-right"> 07 December 2019 , 00:49 </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                            <input type="checkbox" id="unread_04">
-                            <label for="unread_04"></label>
-                        </td>
-
-                        <td> Name (B-ID:ABC-123456) </td>
-
-                        <td> </td>
-
-                        <td> </td>
-
-                        <td class="text-right"> 07 December 2019 , 00:49 </td>
-                    </tr>
+                    <tr *ngIf="users && users.length === 0">
+                        <td colspan="5">No Records</td>
+                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="clearfix">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled no-bor">
-                <a class="page-link" href="#" aria-label="Previous">
-                    <i class="fa fa-angle-double-left"></i>
-                </a>
-            </li>
-
-            <li class="page-item disabled no-bor">
-                <a class="page-link" href="#" aria-label="Previous">
-                    <i class="fa fa-angle-left"></i>
-                </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#"> 1 </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#"> 2 </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#"> 3 </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#"> 4 </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#"> 5 </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#"> 6 </a>
-            </li>
-
-            <li class="page-item no-bor">
-                <a class="page-link" href="#" aria-label="Next">
-                    <i class="fa fa-angle-right"></i>
-                </a>
-            </li>
-
-            <li class="page-item no-bor">
-                <a class="page-link" href="#" aria-label="Next">
-                    <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-        </ul>
+    <div class="clearfix pagination justify-content-center" *ngIf="metaData">
+        <ngb-pagination [collectionSize]="metaData.total" [pageSize]="metaData.per_page"
+            [(page)]="metaData.current_page" [maxSize]="7" [rotate]="true" [ellipses]="false" [boundaryLinks]="true"
+            (pageChange)="loadPage($event)"></ngb-pagination>
     </div>
 </div>

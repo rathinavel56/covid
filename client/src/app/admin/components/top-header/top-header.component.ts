@@ -18,7 +18,8 @@ export class TopHeaderComponent implements OnInit {
   }
 
   setCurrentUrl() {
-    this.currentUrl = window.location.href;
+    this.currentUrl = window.location.href.split('?');
+    this.currentUrl = this.currentUrl[0];
     this.currentUrl = this.currentUrl.split('/');
     this.currentUrl = this.currentUrl[this.currentUrl.length-1];
     this.currentUrl = this.currentUrl.split('_');

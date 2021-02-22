@@ -22,9 +22,31 @@ export class UserService {
         return this.apiService.httpPost(login, loginForm.value);
     }
 
+    booking(request: any): Observable<any> {
+        const booking: string = AppConst.SERVER_URL.BOOKING;
+        return this.apiService.httpPost(booking, request);
+    }
+
+    booked(request: any): Observable<any> {
+        const booking: string = AppConst.SERVER_URL.BOOKED;
+        return this.apiService.httpGet(booking, request);
+    }
+
+    bookedDetail(id: any, request: any): Observable<any> {
+        const booking: string = AppConst.SERVER_URL.BOOKED + '/' + id;
+        return this.apiService.httpPut(booking, request);
+    }
     socialLogin(socialLogin: SocialLogin, queryParam: QueryParam): Observable<User> {
         const login: string = AppConst.SERVER_URL.SOCIAL_LOGIN;
         return this.apiService.httpPost(login, socialLogin, queryParam);
+    }
+    dashboard(): Observable<any> {
+        const dashboard: string = AppConst.SERVER_URL.DASHBOARD;
+        return this.apiService.httpGet(dashboard);
+    }
+
+    suspendOrActivate(id, request: any): Observable<any> {
+        return this.apiService.httpPut('/suspend-or-activate/' + id, request);
     }
 
     update(updateForm: FormGroup): Observable<User> {
@@ -60,6 +82,11 @@ export class UserService {
     getUserAll(): Observable<any> {
         const url: string = AppConst.SERVER_URL.ADMINUSER;
         return this.apiService.httpGet(url, null);
+    }
+
+    getUserAlls(request: any): Observable<any> {
+        const url: string = AppConst.SERVER_URL.ADMINUSER;
+        return this.apiService.httpGet(url, request);
     }
 
     getActivity(): Observable<any> {

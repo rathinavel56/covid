@@ -1,0 +1,74 @@
+<div class="container-fluid">
+    <div class="pt-40 clearfix custom-tab">
+        <div class="clearfix mt-20">
+            <form action="" class="form-inline">
+                <div class="form-group pr-20">
+                    <label for="from_date" class="pr-10"> From </label>
+                    <div class="clsSelect-icon">
+                        <select name="" id="" class="form-control">
+                            <option value=""> 12 - 01 - 2020 </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group pr-20">
+                    <label for="to_date" class="pr-10"> To </label>
+                    <div class="clsSelect-icon">
+                        <select name="" id="" class="form-control">
+                            <option value=""> 19 - 01 - 2020 </option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="clearfix pt-40">
+            <p class="text-21 db-c" *ngIf="tested.positive"> Positive ({{tested.positive ? tested.positive.length : 0}}) </p>
+
+            <div class="clearfix mt-20 clsReceipt-table clsPagesTable table-responsive">
+                <table class="table table-sm mb-20">
+                    <thead>
+                        <tr>
+                            <th> # </th>
+                            <th> Employee Name </th>
+                            <th> Tested Date </th>
+                            <th> Type of Test </th>
+                            <th> Status </th>
+                            <!-- <th> </th> -->
+                            <th> </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let positive of tested.positive; let indexPositive = index">
+                            <td>{{indexPositive + 1}}</td>
+                            <td>
+                                <div class="media">
+                                    <div class="media-left pr-20">
+                                        <app-attachment *ngIf="positive.attachment"
+                                            [attachment]="positive.attachment"
+                                            [cssClass]="'clsCircleImg'" [type]="original">
+                                        </app-attachment>
+                                    </div>
+                                    <div class="media-body media-middle">
+                                        <p> {{positive.user.first_name}} </p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td> {{positive.last_test_date}} </td>
+                            <td> {{positive.test_type.name}} </td>
+                            <td> Positive </td>
+                            <!-- <td>
+                                <button class="btn btn-sm btn-success width_in"> Deactive </button>
+                            </td> -->
+                            <td>
+                                <button class="btn btn-sm btn-link width_in"><a href="javascript:void(0)" [routerLink]="['/admin/employeeprofile']" [queryParams]="{id:positive.id}">View</a></button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="!tested.positive || tested.positive.length == 0">
+                            <td colspan="5">No Records</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

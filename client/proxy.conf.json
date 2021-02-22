@@ -1,18 +1,18 @@
 {
     "/api/*": {
-        "target": "http://3.132.95.244",
+        "target": "http://bluestoneid.com",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
     },
     "/images/original/*": {
-        "target": "http://3.132.95.244",
+        "target": "http://bluestoneid.com",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
     },
     "/images/static/*": {
-        "target": "http://3.132.95.244",
+        "target": "http://bluestoneid.com",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true
